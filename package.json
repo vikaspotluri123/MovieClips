@@ -1,0 +1,26 @@
+{
+  "name": "movieclips",
+  "version": "0.0.1",
+  "description": "Watch short clips of videos",
+  "main": "index.js",
+  "dependencies": {
+    "array-shuffle": "^1.0.1",
+    "array-unique": "^0.3.2",
+    "electron": "^1.7.2",
+    "electron-json-storage": "^3.0.5",
+    "glob": "^7.1.2",
+    "jquery": "^3.2.1",
+    "open": "0.0.5",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "electron-prebuilt": "^0.26",
+    "devtron": "^1.4.0",
+    "electron-debug": "^1.1.0",
+    "electron-packager": "^8.7.0"
+  },
+  "scripts": {
+    "start": "electron index.js"
+  },
+  "license": "GPL-3.0"
+}
