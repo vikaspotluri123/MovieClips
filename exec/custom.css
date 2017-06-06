@@ -47,12 +47,22 @@
 body
 {
 	overflow:hidden;
+	transition:background 1s linear;
+	display: flex;
+    max-height: 99vh;
+    flex-direction: column;
+}
+
+main
+{
+	flex: 1 0 auto;
 }
 
 body.loading > main, body.loading > footer
 {
 	visibility: hidden;
 	opacity:0;
+	will-change:opacity;
 	transition-property: visibility, opacity;
 	transition-duration:0.3s;
 }
@@ -64,6 +74,38 @@ body:not(.loading) > #loading-wrapper
 	margin-top:-100vh;
 }
 
+body.fullscreen
+{
+	background:black !important;
+}
+
+body.fullscreen #main
+{
+	position:absolute;
+	width:100vw;
+	height:100vh;
+	left:0;
+	right:0;
+	margin-top:-13vh;
+}
+
+body.fullscreen #meta
+{
+	position:absolute;
+	left:0;
+	top:0;
+	z-index:0;
+	width:100vw;
+	opacity:0;
+	transition:all 2s linear;
+}
+
+body.fullscreen #meta.active
+{
+	z-index:10;
+	opacity:1;
+	background:linear-gradient(black,black,transparent);
+}
 #loading-wrapper
 {
 	height:100vh;
@@ -75,7 +117,8 @@ body:not(.loading) > #loading-wrapper
 #loading-wrapper > .center
 {
 	width:100vw;
-	padding-top: 10vh;
+	padding-top: 50vh;
+	height:50vh;
 }
 
 #loading-wrapper .preloader-wrapper
@@ -89,10 +132,18 @@ body:not(.loading) > #loading-wrapper
 	padding-top:10vh;
 }
 
+#rate
+{
+	margin-left:3%;
+	margin-top:8px;
+}
+
 #main
 {
 	height:100%;
 	width:100%;
+	min-height: 55vh;
+	transition: all 1s ease;
 }
 i.controller
 {
@@ -102,4 +153,25 @@ i.controller
 i.controller:hover
 {
 	color:red;
+}
+#animatedActions
+{
+	position:absolute;
+	margin-top:16%;
+	left:45%;
+	z-index:0;
+}
+
+#animatedActions div
+{
+	display:none;
+	transition:z-index 2s;
+	background:rgba(25,25,25,0.8);
+	border-radius: 50%;
+}
+
+#animatedActions .active
+{
+	display: block;
+	z-index:5;
 }

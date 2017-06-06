@@ -62,8 +62,15 @@
 		<header></header>
 		<main>
 			<div class="section container black no-pad-bot" id="video-wrapper">
-				<video class="hoverable" id="main" controls autoplay src="D:/Media/Full House/Fuller House 2x10 - New Kids in the House.mp4">
-				</video>
+				<div class="row" id="meta">
+					<div id="rate" class="left">1.00</div>
+					<div id="title" class="flow-text center"></div>
+				</div>
+				<div id="animatedActions" class="center valign-wrapper">
+					<div id="action-play"><i class="material-icons large">play_arrow</i></div>
+					<div id="action-pause"><i class="material-icons large">pause</i></div>
+				</div>
+				<video class="hoverable" id="main" controls autoplay src="" aria-label="Main video"></video>
 			</div>
 			<div class="section container center" id="controls">
 				<i class="material-icons controller" id="back">skip_previous</i>
@@ -81,11 +88,15 @@
 		window.fs = {};
 		window.fs.readDir = require('fs').readdirSync;
 		window.fs.stat = require('fs').statSync;
-		window.data = require('electron-json-storage');
-		window.shuffle = require('array-shuffle');
+		//window.data = require('electron-json-storage');
+		window.shuffle = require('secure-shuffle');
 		window.unique = require('array-unique');
 		window.openExternal = require('open');
+		window.electron = require('electron');
+		window.Promise = require('bluebird');
+		require('./new-app.js');
 	</script>
+	<!--Materialize isn't really built for require; it's not worth the overhead-->
 	<script type="text/javascript" src="./exec/lib/material.js"></script>
-	<script type="text/javascript" src="./exec/app.js"></script>
+	<script type="text/javascript" defer>window.movieClips.initialize();</script>
 </html>
