@@ -3,7 +3,7 @@ const {BrowserWindow, app} = require('electron');
 // @const autoUpdater = require('./autoUpdater');
 
 let debug = /--debug/.test(process.argv[2]);
-debug = true;
+// debug = true;
 
 if (process.mas) {
 	app.setName('Electron APIs');
@@ -94,15 +94,16 @@ function makeSingleInstance() {
 		return false;
 	}
 
-	return app.makeSingleInstance(() => {
-		if (mainWindow) {
-			if (mainWindow.isMinimized()) {
-				mainWindow.restore();
-			}
+    app.requestSingleInstanceLock();
+    app.on('second-instance', () => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
+            }
 
-			mainWindow.focus();
-		}
-	});
+            mainWindow.focus();
+        }
+    });
 }
 
 /* // Handle Squirrel on Windows startup events
