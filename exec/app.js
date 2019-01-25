@@ -1,4 +1,4 @@
-/* global window, $, document, localStorage, fs, Materialize */
+/* global window, document, localStorage, fs, Materialize */
 /*
 * @type: object
 * @name: window.storage
@@ -22,7 +22,7 @@ window.movieClips = window.movieClips || {
 	isLoading: false, // Loading screen is showing
 	shorty: true, // Stop after {range} seconds or play to end
 	index: 0, // Video index
-	defaultDirectory: 'D:/Media/',
+	defaultDirectory: 'D:/Videos/',
 	range: { // Shorty - min & max length to play
 		min: 10, // 180, // At least 3 minutes
 		max: 11 // 360 // At most 6 minutes
@@ -69,9 +69,9 @@ window.movieClips = window.movieClips || {
 		setLoading(to) {
 			window.movieClips.isLoading = Boolean(to);
 			if (to) {
-				$('body').addClass('loading');
+				document.querySelector('body').classList.add('loading');
 			} else {
-				$('body').removeClass('loading');
+				document.querySelector('body').classList.remove('loading');
 			}
 		},
 		/*
@@ -82,7 +82,7 @@ window.movieClips = window.movieClips || {
 		* @return {null}
 		*/
 		setStatus(to) {
-			$('#status').text(to);
+			document.querySelector('#status').textContent = to;
 		},
 		/*
 		* @type: function
@@ -92,7 +92,7 @@ window.movieClips = window.movieClips || {
 		* @return {null}
 		*/
 		setTitle(title) {
-			$('#title').text(title);
+			document.querySelector('#title').textContent = title;
 		},
 		/*
 		* @type: function
@@ -106,23 +106,23 @@ window.movieClips = window.movieClips || {
 			// Check if the movie is supported based on the file extension (weed out the bad ones early)
 			let ext = movie.split('.');
 			ext = ext[ext.length - 1];
-			if ($.inArray(ext, window.movieClips.supported) < 0) {
+			if (!window.movieClips.supported.includes(ext)) {
 				console.warn('[rejection]', movie);
 				window.movieClips.vids.splice(index, 1); // Remove because it's not needed
 				index--;
-				window.movieClips.handlers.next(null);
-			} else {
-				console.log(movie);
-				// Load the movie
-				$('#main').attr('src', movie);
-				// Update the movie title area
-				let title = movie.split('/');
-				title = title[title.length - 1].split('.');
-				title = title[title.length - 2];
-				window.movieClips.util.setTitle(title);
-				// Actually load the movie
-				$('#main')[0].load();
+				return window.movieClips.handlers.next(null);
 			}
+
+			console.log(movie);
+			// Load the movie
+			document.querySelector('#main').setAttribute('src', movie);
+			// Update the movie title area
+			let title = movie.split('/');
+			title = title[title.length - 1].split('.');
+			title = title[title.length - 2];
+			window.movieClips.util.setTitle(title);
+			// Actually load the movie
+			document.querySelector('#main').load();
 		},
 		/*
 		* @type: function
@@ -152,11 +152,11 @@ window.movieClips = window.movieClips || {
 				window.movieClips.util.setStatus('Randomizing');
 				shuffle(window.movieClips.vids); // See mutates input. See Secure-shuffle documentation
 				window.movieClips.util.setStatus('Removing unplaybale tracks');
-				window.movieClips.vids = $.map(window.movieClips.vids, video => {
+				window.movieClips.vids = window.movieClips.vids.map(video => {
 					let ext = video.split('.');
 					ext = ext[ext.length - 1];
-					return ($.inArray(ext, window.movieClips.supported) < 0) ? null : video;
-				});
+					return (window.movieClips.supported.includes(ext)) ? video : null;
+				}).filter(Boolean);
 				resolve();
 			});
 		},
@@ -200,7 +200,7 @@ window.movieClips = window.movieClips || {
 		* @return {Promise}: the promise returned by calling play
 		*/
 		play() {
-			return $('#main')[0].play();
+			return document.querySelector('#main').play();
 		},
 		/*
 		* @type: function
@@ -210,7 +210,7 @@ window.movieClips = window.movieClips || {
 		* @return {null}
 		*/
 		pause() {
-			$('#main')[0].pause(); // Returns undefined
+			document.querySelector('#main').pause(); // Returns undefined
 		},
 		/*
 		* @type: function
@@ -220,13 +220,13 @@ window.movieClips = window.movieClips || {
 		* @return {Number}: The new playback rate
 		*/
 		increaseSpeed(increment) {
-			const current = $('#main')[0].playbackRate;
+			const current = document.querySelector('#main').playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
 			let final = current + (increment || 0.1); // Default increment 0.1x
 			final = (final > max) ? max : final;
 			final = (final < min) ? min : final;
-			$('#main')[0].playbackRate = final;
+			document.querySelector('#main').playbackRate = final;
 			return final;
 		},
 		/*
@@ -237,13 +237,13 @@ window.movieClips = window.movieClips || {
 		* @return {Number}: The new playback rate
 		*/
 		decreaseSpeed(decrement) {
-			const current = $('#main')[0].playbackRate;
+			const current = document.querySelector('#main').playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
 			let final = current - (decrement || 0.1); // Default decrement 0.1x
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			$('#main')[0].playbackRate = final;
+			document.querySelector('#main').playbackRate = final;
 			return final;
 		},
 		/*
@@ -254,13 +254,13 @@ window.movieClips = window.movieClips || {
 		* @return {Number}: The new time
 		*/
 		scrollForward(seconds) {
-			const current = $('#main')[0].currentTime;
+			const current = document.querySelector('#main').currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = $('#main')[0].duration - 0.5; // Half a second event buffer
+			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
 			let final = current + (seconds || 5); // Default increment 5 seconds
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			$('#main')[0].currentTime = final;
+			document.querySelector('#main').currentTime = final;
 			return final;
 		},
 		/*
@@ -271,13 +271,13 @@ window.movieClips = window.movieClips || {
 		* @return {Number}: The new time
 		*/
 		scrollBackward(seconds) {
-			const current = $('#main')[0].currentTime;
+			const current = document.querySelector('#main').currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = $('#main')[0].duration - 0.5; // Half a second event buffer
+			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
 			let final = current - (seconds || 5); // Default increment 5 seconds
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			$('#main')[0].currentTime = final;
+			document.querySelector('#main').currentTime = final;
 			return final;
 		},
 		/*
@@ -288,13 +288,13 @@ window.movieClips = window.movieClips || {
 		* @return {Number}: The new volume level
 		*/
 		increaseVolume(percent) {
-			const current = $('#main')[0].volume;
+			const current = document.querySelector('#main').volume;
 			const min = 0;
 			const max = 1;
 			let final = current + (percent || 0.05); // Default increment of 5%
 			final = final < min ? min : final;
 			final = final > max ? max : final;
-			$('#main')[0].volume = final;
+			document.querySelector('#main').volume = final;
 			return final;
 		},
 		/*
@@ -305,13 +305,13 @@ window.movieClips = window.movieClips || {
 		* @return {Number}: The new volume level
 		*/
 		decreaseVolume(percent) {
-			const current = $('#main')[0].volume;
+			const current = document.querySelector('#main').volume;
 			const min = 0;
 			const max = 1;
 			let final = current - (percent || 0.05); // Default decrement of 5%
 			final = final < min ? min : final;
 			final = final > max ? max : final;
-			$('#main')[0].volume = final;
+			document.querySelector('#main').volume = final;
 			return final;
 		},
 		/*
@@ -323,10 +323,10 @@ window.movieClips = window.movieClips || {
 		*/
 		moveTo(seconds) {
 			const min = 0.1; // Start a little after the beginning of the video
-			const max = $('#main')[0].duration - 0.5; // Half a second event buffer
+			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
 			seconds = ((seconds || min) > max) ? max : seconds;
 			seconds = (seconds < min) ? min : seconds;
-			$('#main')[0].currentTime = seconds;
+			document.querySelector('#main').currentTime = seconds;
 		},
 		/*
 		* @type: function
@@ -339,7 +339,7 @@ window.movieClips = window.movieClips || {
 			level = parseFloat((level || 1)).toFixed(2);
 			level = level < 0 ? 0 : level;
 			level = level > 1 ? 1 : level;
-			$('#main')[0].volume = level;
+			document.querySelector('#main').volume = level;
 			return level;
 		},
 		/*
@@ -350,7 +350,7 @@ window.movieClips = window.movieClips || {
 		* @return {Boolean}: Mute state
 		*/
 		mute() {
-			$('#main')[0].muted = true;
+			document.querySelector('#main').muted = true;
 		},
 		/*
 		* @type: function
@@ -360,7 +360,7 @@ window.movieClips = window.movieClips || {
 		* @return {Boolean}: Mute state
 		*/
 		unMute() {
-			$('#main')[0].muted = false;
+			document.querySelector('#main').muted = false;
 		},
 		/*
 		* @type: function
@@ -370,7 +370,7 @@ window.movieClips = window.movieClips || {
 		* @return {Boolean}: Mute state
 		*/
 		toggleMute() {
-			$('#main')[0].muted = !($('#main')[0].muted);
+			document.querySelector('#main').muted = !(document.querySelector('#main').muted);
 		},
 		/*
 		* @type: function
@@ -380,7 +380,7 @@ window.movieClips = window.movieClips || {
 		* @return {Boolean}: Play state
 		*/
 		togglePlaying() {
-			return ($('#main')[0].paused ? window.movieClips.mediaActions.play() : window.movieClips.mediaActions.pause());
+			return (document.querySelector('#main').paused ? window.movieClips.mediaActions.play() : window.movieClips.mediaActions.pause());
 		}
 	},
 	/*
@@ -409,7 +409,7 @@ window.movieClips = window.movieClips || {
 		*/
 		metadata(_) {
 			// @todo add full video support
-			const len = $(this).prop('duration');
+			const len = this.duration;
 			let start = Math.floor((Math.random() * (len - 0.5 + 1)) + 0.5);
 			if ((len - start) < window.movieClips.range.upper) {
 				start = len - window.movieClips.range.upper;
@@ -447,9 +447,9 @@ window.movieClips = window.movieClips || {
 					window.movieClips.util.setStatus('Done... Goodbye');
 					window.movieClips.util.setLoading(false);
 				});
-				$('#back').addClass('disabled');
+				document.querySelector('#back').classList.add('disabled');
 			} else {
-				$('#back').removeClass('disabled');
+				document.querySelector('#back').classList.remove('disabled');
 				window.movieClips.util.setMovie(window.movieClips.index);
 			}
 		},
@@ -467,7 +467,7 @@ window.movieClips = window.movieClips || {
 				window.movieClips.index--;
 				window.movieClips.util.setMovie(window.movieClips.index);
 			} else {
-				$('#back').addClass('disabled');
+				document.querySelector('#back').classList.add('disabled');
 			}
 		},
 		/*
@@ -478,18 +478,18 @@ window.movieClips = window.movieClips || {
 		* @return {null}
 		*/
 		playPause(_) {
-			const current = $(this).text();
+			const current = this.textContent;
 			if (current === 'pause') {
 				window.movieClips.shorty = false;
 				clearTimeout(window.movieClips.shortyTimer);
 				console.log('timeout cleared');
 				window.movieClips.shortyTime.set = -1;
-				$(this).text('play_arrow');
+				this.textContent = 'play_arrow';
 				Materialize.toast('Snippets Disabled', 2000);
 			} else {
 				window.movieClips.shorty = true;
 				window.movieClips.util.videoStop();
-				$(this).text('pause');
+				this.textContent = 'pause';
 				Materialize.toast('Snippets Enabled', 2000);
 			}
 		},
@@ -576,11 +576,11 @@ window.movieClips = window.movieClips || {
 		* @return {null}
 		*/
 		play(_) {
-			$('#main').off('ended');
+			document.querySelector('#main').removeEventListener('ended', window.movieClips.handlers.next);
 			if (window.movieClips.shorty) {
 				window.movieClips.util.videoStop();
 			} else {
-				$('#main').on('ended', window.movieClips.handlers.next);
+				document.querySelector('#main').addEventListener('ended', window.movieClips.handlers.next);
 			}
 		},
 		pause(_) {
@@ -596,7 +596,7 @@ window.movieClips = window.movieClips || {
 		* @return {null}
 		*/
 		ratechange(_) {
-			$('#rate').text(parseFloat(this.playbackRate).toFixed(2));
+			document.querySelector('#rate').textContent = parseFloat(this.playbackRate).toFixed(2);
 		}
 	},
 	/*
@@ -611,20 +611,20 @@ window.movieClips = window.movieClips || {
 		// We have to wait for the list to update
 		window.movieClips.util.updateList().then(() => {
 			window.movieClips.util.setStatus('Making buttons clickable');
-			$('#back').click(window.movieClips.handlers.previous);
-			$('#next').click(window.movieClips.handlers.next);
-			$('#main').click(window.movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
-			$('#main').dblclick(window.movieClips.handlers.fullscreen);
+			document.querySelector('#back').addEventListener('click', window.movieClips.handlers.previous);
+			document.querySelector('#next').addEventListener('click', window.movieClips.handlers.next);
+			document.querySelector('#main').addEventListener('click', window.movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
+			document.querySelector('#main').addEventListener('dblclick', window.movieClips.handlers.fullscreen);
 			window.movieClips.util.setStatus('Adding keyboard shortcuts');
-			$('#playPause').click(window.movieClips.handlers.playPause);
-			$(document).keypress(window.movieClips.handlers.keypress);
-			$(document).keydown(window.movieClips.handlers.keydown);
+			document.querySelector('#playPause').addEventListener('click', window.movieClips.handlers.playPause);
+			document.addEventListener('keypress', window.movieClips.handlers.keypress);
+			document.addEventListener('keydown', window.movieClips.handlers.keydown);
 			window.movieClips.util.setStatus('Loading video helpers');
-			$('#main').on('ratechange', window.movieClips.handlers.ratechange);
-			$('#main').on('play', window.movieClips.handlers.play);
-			$('#main').on('pause', window.movieClips.handlers.pause);
-			$('#main').on('loadedmetadata', window.movieClips.handlers.metadata);
-			$('#main')[0].onerror = window.movieClips.handlers.next;
+			document.querySelector('#main').addEventListener('ratechange', window.movieClips.handlers.ratechange);
+			document.querySelector('#main').addEventListener('play', window.movieClips.handlers.play);
+			document.querySelector('#main').addEventListener('pause', window.movieClips.handlers.pause);
+			document.querySelector('#main').addEventListener('loadedmetadata', window.movieClips.handlers.metadata);
+			document.querySelector('#main').onerror = window.movieClips.handlers.next;
 			window.movieClips.util.setStatus('Starting Up');
 			window.movieClips.util.setMovie(0);
 			window.movieClips.util.setStatus('Done... Goodbye');
