@@ -1,3 +1,4 @@
+// @ts-check
 const path = require('path');
 const {BrowserWindow, app} = require('electron');
 // @const autoUpdater = require('./autoUpdater');
@@ -18,17 +19,20 @@ function initialize() {
 	}
 
 	function createWindow() {
+		/** @type {import('electron').BrowserWindowConstructorOptions} */
 		const windowOptions = {
 			width: 1080,
 			minWidth: 680,
 			minHeight: 680,
 			height: 840,
 			title: app.getName(),
-			'web-preferences': {
-				'web-security': false,
-				'overlay-fullscreen-video': true
+			webPreferences: {
+				webSecurity: false,
+				nodeIntegration: true,
+				// preload: path.join(app.getAppPath(), 'index-preload.js')
 			}
 		};
+		console.log(app.getAppPath());
 		/* @if (process.platform === 'linux') {
 			windowOptions.icon = path.join(__dirname, '/assets/app-icon/png/512.png');
 		} */
@@ -40,7 +44,6 @@ function initialize() {
 		if (debug) {
 			mainWindow.webContents.openDevTools();
 			mainWindow.maximize();
-			require('devtron').install();
 		}
 
 		mainWindow.on('closed', () => {
