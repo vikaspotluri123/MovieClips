@@ -103,6 +103,11 @@ window.movieClips = window.movieClips || {
 		setMovie(index) {
 			// Filename
 			const movie = window.movieClips.vids[index];
+			if (!movie) {
+				window.movieClips.util.setStatus('No movies found');
+				return false;
+			}
+
 			// Check if the movie is supported based on the file extension (weed out the bad ones early)
 			let ext = movie.split('.');
 			ext = ext[ext.length - 1];
@@ -110,7 +115,8 @@ window.movieClips = window.movieClips || {
 				console.warn('[rejection]', movie);
 				window.movieClips.vids.splice(index, 1); // Remove because it's not needed
 				index--;
-				return window.movieClips.handlers.next(null);
+				window.movieClips.handlers.next(null);
+				return true;
 			}
 
 			console.log(movie);
@@ -123,6 +129,7 @@ window.movieClips = window.movieClips || {
 			window.movieClips.util.setTitle(title);
 			// Actually load the movie
 			document.querySelector('#main').load();
+			return true;
 		},
 		/*
 		* @type: function
@@ -626,9 +633,10 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').addEventListener('loadedmetadata', window.movieClips.handlers.metadata);
 			document.querySelector('#main').onerror = window.movieClips.handlers.next;
 			window.movieClips.util.setStatus('Starting Up');
-			window.movieClips.util.setMovie(0);
-			window.movieClips.util.setStatus('Done... Goodbye');
-			window.movieClips.util.setLoading(false);
+			if (window.movieClips.util.setMovie(0)) {
+				window.movieClips.util.setStatus('Done... Goodbye');
+				window.movieClips.util.setLoading(false);
+			}
 		});
 	}
 };
