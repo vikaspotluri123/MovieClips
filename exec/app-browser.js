@@ -59,11 +59,11 @@ class Directory {
 	}
 }
 
-/*
-* @type: object
-* @name: window.storage
-* @description: Option handler for the app. This is implemented explicitly to make changing this mechanism easier
-*/
+/**
+ * @type: object
+ * @name: window.storage
+ * @description: Option handler for the app. This is implemented explicitly to make changing this mechanism easier
+ */
 window.storage = window.storage || {
 	get(item) {
 		return localStorage.getItem(item);
@@ -72,11 +72,11 @@ window.storage = window.storage || {
 		return localStorage.setItem(item, value);
 	}
 };
-/*
-* @type: object
-* @name: window.movieClips
-* @description: All of the functions and variables associated with MovieClips
-*/
+/**
+ * @type: object
+ * @name: window.movieClips
+ * @description: All of the functions and variables associated with MovieClips
+ */
 window.movieClips = window.movieClips || {
 	vids: [], // The array of scanned videos
 	isLoading: false, // Loading screen is showing
@@ -92,19 +92,19 @@ window.movieClips = window.movieClips || {
 		set: -1, // The timer duration
 		at: Date.now() // Current time
 	},
-	/*
-	* @type: object
-	* @name: window.movieClips.util
-	* @description: Utilities that are used throughout the app
-	*/
+	/**
+	 * @type: object
+	 * @name: window.movieClips.util
+	 * @description: Utilities that are used throughout the app
+	 */
 	util: {
-		/*
-		* @type: function
-		* @name: window.movieClips.util.allFile
-		* @description: Returns all of the files in a given folder, recursively
-		* @param {String} folder: The folder to scan
-		* @return {Array}: All of the files in specified `${folder}`
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.allFile
+		 * @description: Returns all of the files in a given folder, recursively
+		 * @param {String} folder: The folder to scan
+		 * @return {Array}: All of the files in specified `${folder}`
+		 */
 		allFiles(folder) {
 			let results = [];
 			fs.readDir(folder).forEach(file => {
@@ -118,13 +118,13 @@ window.movieClips = window.movieClips || {
 			});
 			return results;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.util.setLoading
-		* @description: Sets the visibility of the loading screens
-		* @param {Boolean} to: Should the loading be enabled
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.setLoading
+		 * @description: Sets the visibility of the loading screens
+		 * @param {Boolean} to: Should the loading be enabled
+		 * @return {null}
+		 */
 		setLoading(to) {
 			window.movieClips.isLoading = Boolean(to);
 			if (to) {
@@ -133,32 +133,32 @@ window.movieClips = window.movieClips || {
 				document.querySelector('body').classList.remove('loading');
 			}
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.util.setStatus
-		* @description: Sets the status text in the loading screen
-		* @param {String} to: Status text to set
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.setStatus
+		 * @description: Sets the status text in the loading screen
+		 * @param {String} to: Status text to set
+		 * @return {null}
+		 */
 		setStatus(to) {
 			document.querySelector('#status').textContent = to;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.util.setTitle
-		* @description: Sets the title element (above the video) to specified text
-		* @param {String} to: Title to set
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.setTitle
+		 * @description: Sets the title element (above the video) to specified text
+		 * @param {String} to: Title to set
+		 * @return {null}
+		 */
 		setTitle(title) {
 			document.querySelector('#title').textContent = title;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.util.setMovie
-		* @description: Loads the specified movie into the player and adds start / stop settings
-		* @param {Integer} index: Index position of filename in ${vids}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.setMovie
+		 * @description: Loads the specified movie into the player and adds start / stop settings
+		 * @param {Integer} index: Index position of filename in ${vids}
+		 */
 		setMovie(index) {
 			// Filename
 			const movie = window.movieClips.vids[index];
@@ -190,13 +190,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').load();
 			return true;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.util.updateList
-		* @description: Populates ${vids} with the files by scanning saved directories
-		* @param {null}
-		* @return {Promise}, no parameters
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.updateList
+		 * @description: Populates ${vids} with the files by scanning saved directories
+		 * @param {null}
+		 * @return {Promise}, no parameters
+		 */
 		updateList() {
 			return new Promise(resolve => {
 				window.movieClips.util.setStatus('Reading Folders');
@@ -225,13 +225,13 @@ window.movieClips = window.movieClips || {
 				resolve();
 			});
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.util.videoStop
-		* @description: sets timers to stop after shorty duration
-		* @param {null}
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.util.videoStop
+		 * @description: sets timers to stop after shorty duration
+		 * @param {null}
+		 * @return {null}
+		 */
 		videoStop() {
 			if (window.movieClips.shorty) {
 				let stopAfter;
@@ -251,39 +251,39 @@ window.movieClips = window.movieClips || {
 			}
 		}
 	},
-	/*
-	* @type: object
-	* @name: window.movieClips.mediaActions
-	* @description: functions for manipulating the video
-	*/
+	/**
+	 * @type: object
+	 * @name: window.movieClips.mediaActions
+	 * @description: functions for manipulating the video
+	 */
 	mediaActions: {
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.play
-		* @description: play the video
-		* @param {null}
-		* @return {Promise}: the promise returned by calling play
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.play
+		 * @description: play the video
+		 * @param {null}
+		 * @return {Promise}: the promise returned by calling play
+		 */
 		play() {
 			return document.querySelector('#main').play();
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.pause
-		* @description: pause the video
-		* @param {null}
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.pause
+		 * @description: pause the video
+		 * @param {null}
+		 * @return {null}
+		 */
 		pause() {
 			document.querySelector('#main').pause(); // Returns undefined
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.increaseSpeed
-		* @description: increase the speed of the video
-		* @param {Number} [0.1] increment: How much to increase the current speed by
-		* @return {Number}: The new playback rate
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.increaseSpeed
+		 * @description: increase the speed of the video
+		 * @param {Number} [0.1] increment: How much to increase the current speed by
+		 * @return {Number}: The new playback rate
+		 */
 		increaseSpeed(increment) {
 			const current = document.querySelector('#main').playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
@@ -294,13 +294,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').playbackRate = final;
 			return final;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.decreaseSpeed
-		* @description: increase the speed of the video
-		* @param {Number} [0.1] decrement: How much to decrease the current speed by
-		* @return {Number}: The new playback rate
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.decreaseSpeed
+		 * @description: increase the speed of the video
+		 * @param {Number} [0.1] decrement: How much to decrease the current speed by
+		 * @return {Number}: The new playback rate
+		 */
 		decreaseSpeed(decrement) {
 			const current = document.querySelector('#main').playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
@@ -311,13 +311,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').playbackRate = final;
 			return final;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.scrollForward
-		* @description: Forwards the video
-		* @param {Number} [0.5] seconds: How much to increase the current time by
-		* @return {Number}: The new time
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.scrollForward
+		 * @description: Forwards the video
+		 * @param {Number} [0.5] seconds: How much to increase the current time by
+		 * @return {Number}: The new time
+		 */
 		scrollForward(seconds) {
 			const current = document.querySelector('#main').currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
@@ -328,13 +328,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').currentTime = final;
 			return final;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.scrollBackward
-		* @description: Rewinds the video
-		* @param {Number} [0.5] seconds: How much to decrease the current time by
-		* @return {Number}: The new time
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.scrollBackward
+		 * @description: Rewinds the video
+		 * @param {Number} [0.5] seconds: How much to decrease the current time by
+		 * @return {Number}: The new time
+		 */
 		scrollBackward(seconds) {
 			const current = document.querySelector('#main').currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
@@ -345,13 +345,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').currentTime = final;
 			return final;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.increaseVolume
-		* @description: Increase the video volume
-		* @param {Number} [0.05] percent(as decimal): What percent to increase the volume
-		* @return {Number}: The new volume level
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.increaseVolume
+		 * @description: Increase the video volume
+		 * @param {Number} [0.05] percent(as decimal): What percent to increase the volume
+		 * @return {Number}: The new volume level
+		 */
 		increaseVolume(percent) {
 			const current = document.querySelector('#main').volume;
 			const min = 0;
@@ -362,13 +362,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').volume = final;
 			return final;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.decreaseVolume
-		* @description: Decrease the video volume
-		* @param {Number} [0.05] percent(as decimal): What percent to decrease the volume
-		* @return {Number}: The new volume level
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.decreaseVolume
+		 * @description: Decrease the video volume
+		 * @param {Number} [0.05] percent(as decimal): What percent to decrease the volume
+		 * @return {Number}: The new volume level
+		 */
 		decreaseVolume(percent) {
 			const current = document.querySelector('#main').volume;
 			const min = 0;
@@ -379,13 +379,13 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').volume = final;
 			return final;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.moveTo
-		* @description: Sets the video time
-		* @param {Number} [0.1] seconds: Position to set video at
-		* @return {Number}: The new time (should = ${seconds})
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.moveTo
+		 * @description: Sets the video time
+		 * @param {Number} [0.1] seconds: Position to set video at
+		 * @return {Number}: The new time (should = ${seconds})
+		 */
 		moveTo(seconds) {
 			const min = 0.1; // Start a little after the beginning of the video
 			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
@@ -393,13 +393,13 @@ window.movieClips = window.movieClips || {
 			seconds = (seconds < min) ? min : seconds;
 			document.querySelector('#main').currentTime = seconds;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.setVolume
-		* @description: Sets the volume
-		* @param {Number} [1] percent (as decimal): the volume percentage to set
-		* @return {Number}: The new volume (should = ${level})
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.setVolume
+		 * @description: Sets the volume
+		 * @param {Number} [1] percent (as decimal): the volume percentage to set
+		 * @return {Number}: The new volume (should = ${level})
+		 */
 		setVolume(level) {
 			level = parseFloat((level || 1)).toFixed(2);
 			level = level < 0 ? 0 : level;
@@ -407,76 +407,76 @@ window.movieClips = window.movieClips || {
 			document.querySelector('#main').volume = level;
 			return level;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.mute
-		* @description: Mutes the video
-		* @param {null}
-		* @return {Boolean}: Mute state
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.mute
+		 * @description: Mutes the video
+		 * @param {null}
+		 * @return {Boolean}: Mute state
+		 */
 		mute() {
 			document.querySelector('#main').muted = true;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.unMute
-		* @description: Unmutes the video
-		* @param {null}
-		* @return {Boolean}: Mute state
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.unMute
+		 * @description: Unmutes the video
+		 * @param {null}
+		 * @return {Boolean}: Mute state
+		 */
 		unMute() {
 			document.querySelector('#main').muted = false;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.toggleMute
-		* @description: Switches between mute states
-		* @param {null}
-		* @return {Boolean}: Mute state
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.toggleMute
+		 * @description: Switches between mute states
+		 * @param {null}
+		 * @return {Boolean}: Mute state
+		 */
 		toggleMute() {
 			document.querySelector('#main').muted = !(document.querySelector('#main').muted);
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.mediaActions.togglePlaying
-		* @description: Switches between play states
-		* @param {null}
-		* @return {Boolean}: Play state
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.mediaActions.togglePlaying
+		 * @description: Switches between play states
+		 * @param {null}
+		 * @return {Boolean}: Play state
+		 */
 		togglePlaying() {
 			return (document.querySelector('#main').paused ? window.movieClips.mediaActions.play() : window.movieClips.mediaActions.pause());
 		}
 	},
-	/*
-	* @type: object
-	* @name: window.movieClips.handles
-	* @description: Handlers used for the listeners throughout the app
-	*/
+	/**
+	 * @type: object
+	 * @name: window.movieClips.handles
+	 * @description: Handlers used for the listeners throughout the app
+	 */
 	handlers: {
 		async directory() {
 			const handle = await window.showDirectoryPicker();
 			const directory = await Directory.read(handle);
 			// TODO
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.fullscreen
-		* @description: Handles switching between fullscreen states
-		* @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
-		* @return {Boolean}: Fullscreen state
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.fullscreen
+		 * @description: Handles switching between fullscreen states
+		 * @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
+		 * @return {Boolean}: Fullscreen state
+		 */
 		fullscreen(event) {
 			// @todo
 			console.log('fullscreen', event);
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.metadata
-		* @description: Sets the start and stop point of the video
-		* @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.metadata
+		 * @description: Sets the start and stop point of the video
+		 * @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
+		 * @return {null}
+		 */
 		metadata(_) {
 			// @todo add full video support
 			const len = this.duration;
@@ -487,13 +487,13 @@ window.movieClips = window.movieClips || {
 
 			this.currentTime = start;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.next
-		* @description: Moves to the next video [when the current video is over or times out (shorty)]
-		* @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.next
+		 * @description: Moves to the next video [when the current video is over or times out (shorty)]
+		 * @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
+		 * @return {null}
+		 */
 		next(event) {
 			if (event) {
 				event.preventDefault();
@@ -523,13 +523,13 @@ window.movieClips = window.movieClips || {
 				window.movieClips.util.setMovie(window.movieClips.index);
 			}
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.previous
-		* @description: Movies to the previous video
-		* @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.previous
+		 * @description: Movies to the previous video
+		 * @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
+		 * @return {null}
+		 */
 		previous(event) {
 			// Make sure it's possible to go back
 			if (window.movieClips.index > 0) {
@@ -540,13 +540,13 @@ window.movieClips = window.movieClips || {
 				document.querySelector('#back').classList.add('disabled');
 			}
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.playPause
-		* @description: Controls the state of shorty (next clip after ${range})
-		* @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.playPause
+		 * @description: Controls the state of shorty (next clip after ${range})
+		 * @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
+		 * @return {null}
+		 */
 		playPause(_) {
 			const current = this.textContent;
 			if (current === 'pause') {
@@ -563,13 +563,13 @@ window.movieClips = window.movieClips || {
 				Materialize.toast('Snippets Enabled', 2000);
 			}
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.keypress
-		* @description: Handles keypress events for keyboard shortcuts
-		* @param {event}: The `Event` object that was fired. Should not be called directly
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.keypress
+		 * @description: Handles keypress events for keyboard shortcuts
+		 * @param {event}: The `Event` object that was fired. Should not be called directly
+		 * @return {null}
+		 */
 		keypress(event) {
 			switch (event.keyCode) {
 				case 32: // @key {space}
@@ -603,13 +603,13 @@ window.movieClips = window.movieClips || {
 					break;
 			}
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.keydown
-		* @description: Handles keydown events for special keys for keyboard shortcuts. These keys don't trigger keypressed
-		* @param {event}: The `Event` object that was fired. Should not be called directly.
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.keydown
+		 * @description: Handles keydown events for special keys for keyboard shortcuts. These keys don't trigger keypressed
+		 * @param {event}: The `Event` object that was fired. Should not be called directly.
+		 * @return {null}
+		 */
 		keydown(event) {
 			switch (event.keyCode) {
 				case 27: // @key {escape}
@@ -638,13 +638,13 @@ window.movieClips = window.movieClips || {
 					break;
 			}
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.play
-		* @description: Adds listeners for pause and adds timeouts
-		* @param {event}: The `Event` object that was fired. Should not be called directly.
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.play
+		 * @description: Adds listeners for pause and adds timeouts
+		 * @param {event}: The `Event` object that was fired. Should not be called directly.
+		 * @return {null}
+		 */
 		play(_) {
 			document.querySelector('#main').removeEventListener('ended', window.movieClips.handlers.next);
 			if (window.movieClips.shorty) {
@@ -658,24 +658,24 @@ window.movieClips = window.movieClips || {
 			console.log('timeout cleared');
 			window.movieClips.shortyTime.set = Date.now() - window.movieClips.shortyTime.at;
 		},
-		/*
-		* @type: function
-		* @name: window.movieClips.handlers.ratechange
-		* @description: Updates the UI when video speed is changed
-		* @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
-		* @return {null}
-		*/
+		/**
+		 * @type: function
+		 * @name: window.movieClips.handlers.ratechange
+		 * @description: Updates the UI when video speed is changed
+		 * @param {event || null}: The `Event` object that was fired. If called directly, no object will be present
+		 * @return {null}
+		 */
 		ratechange(_) {
 			document.querySelector('#rate').textContent = parseFloat(this.playbackRate).toFixed(2);
 		}
 	},
-	/*
-	* @type: function
-	* @name: window.movieClips.initialize
-	* @description: Initializes MovieClips
-	* @param {null}
-	* @return {null}
-	*/
+	/**
+	 * @type: function
+	 * @name: window.movieClips.initialize
+	 * @description: Initializes MovieClips
+	 * @param {null}
+	 * @return {null}
+	 */
 	initialize() {
 		window.movieClips.util.setLoading(1);
 		document.querySelector('#directory-selector').addEventListener('click', window.movieClips.handlers.directory);
