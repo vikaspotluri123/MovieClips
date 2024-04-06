@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Movie Clips!</title>
+  <link rel="stylesheet" type="text/css" href="./exec/lib/material.css" />
+  <link rel="stylesheet" type="text/css" href="./exec/custom.css" />
+</head>
+
+<body class="primary-dark white-text text-darken-1 loading">
+  <div id="loading-wrapper" class="valign-wrapper center">
+    <div class="center">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+        <div class="spinner-layer spinner-red">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+        <div class="spinner-layer spinner-yellow">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+        <div class="spinner-layer spinner-green">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+      </div>
+      <div id="progress-name">
+        <p class="flow-text">Loading Goodies</p>
+        <p id="status">Initializing</p>
+      </div>
+    </div>
+  </div>
+  <header></header>
+  <div id="selector" hidden>
+    <div class="section container no-pad-bot main-contents">
+      <h2>Add a directory</h2>
+      <button class="btn" id="directory-selector">Add a directory</button>
+    </div>
+  </div>
+  <main id="player">
+    <div class="section container black no-pad-bot main-contents" id="video-wrapper">
+      <div class="row" id="meta">
+        <div id="rate" class="left">1.00</div>
+        <div id="title" class="flow-text center"></div>
+      </div>
+      <div id="animatedActions" class="center valign-wrapper">
+        <div id="action-play"><i class="material-icons large">play_arrow</i></div>
+        <div id="action-pause"><i class="material-icons large">pause</i></div>
+      </div>
+      <video class="hoverable" id="main" controls autoplay src="" aria-label="Main video"></video>
+    </div>
+    <div class="section container center" id="controls">
+      <i class="material-icons controller" id="back">skip_previous</i>
+      <i class="material-icons controller" id="playPause">pause</i>
+      <i class="material-icons controller" id="next">skip_next</i>
+    </div>
+  </main>
+  <footer class="footer">
+    <center>Created by <a href="https://github.com/vikaspotluri123"
+        onclick="window.openExternal(this.href);return false;">Vikas Potluri</a></center>
+  </footer>
+</body>
+<script src="./exec/jquery.js" async></script>
+<script src="./exec/lib/hammer.js" async></script>
+<script type="text/javascript">
+  window.fs = {};
+  window.fs.readDir = () => {
+    throw new Error('readdir is not implemented')
+  };
+  window.fs.stat = () => {
+    throw new Error('stat is not implemented');
+  };
+  window.shuffle = array => { // Durstenfeld shuffle
+    for (let i = array.length - 1; i > 0; --i) {
+      const swapIndex = Math.floor(Math.random() * (i + 1));
+      const swapData = array[i];
+      array[i] = array[swapIndex];
+      array[swapIndex] = swapData;
+    }
+  };
+  window.unique = array => Array.from(new Set(array));
+  window.openExternal = () => {
+    throw new Error('openExternal is not implemented')
+  };
+  window.electron = {};
+</script>
+<script src="./exec/app-browser.js"></script>
+<!--Materialize isn't really built for require; it's not worth the overhead-->
+<script type="text/javascript" src="./exec/lib/material.js"></script>
+<script type="text/javascript" defer>window.movieClips.initialize();</script>
+
+</html>

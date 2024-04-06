@@ -1,102 +1,106 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>Movie Clips!</title>
-		<link rel="stylesheet" type="text/css" href="./exec/lib/material.css" />
-		<link rel="stylesheet" type="text/css" href="./exec/custom.css" />
-	</head>
-	<body class="primary-dark white-text text-darken-1 loading">
-		<div id="loading-wrapper" class="valign-wrapper center">
-			<div class="center">
-				<div class="preloader-wrapper big active">
-					<div class="spinner-layer spinner-blue">
-						<div class="circle-clipper left">
-							<div class="circle"></div>
-						</div>
-						<div class="gap-patch">
-							<div class="circle"></div>
-						</div>
-						<div class="circle-clipper right">
-			  				<div class="circle"></div>
-						</div>
-		  			</div>
-					<div class="spinner-layer spinner-red">
-						<div class="circle-clipper left">
-							<div class="circle"></div>
-						</div>
-						<div class="gap-patch">
-							<div class="circle"></div>
-						</div><div class="circle-clipper right">
-							<div class="circle"></div>
-						</div>
+
+<head>
+	<title>Movie Clips!</title>
+	<link rel="stylesheet" type="text/css" href="./exec/lib/material.css" />
+	<link rel="stylesheet" type="text/css" href="./exec/custom.css" />
+</head>
+
+<body class="primary-dark white-text text-darken-1 loading">
+	<div id="loading-wrapper" class="valign-wrapper center">
+		<div class="center">
+			<div class="preloader-wrapper big active">
+				<div class="spinner-layer spinner-blue">
+					<div class="circle-clipper left">
+						<div class="circle"></div>
 					</div>
-					<div class="spinner-layer spinner-yellow">
-						<div class="circle-clipper left">
-							<div class="circle"></div>
-						</div>
-						<div class="gap-patch">
-							<div class="circle"></div>
-						</div>
-						<div class="circle-clipper right">
-							<div class="circle"></div>
-						</div>
+					<div class="gap-patch">
+						<div class="circle"></div>
 					</div>
-					<div class="spinner-layer spinner-green">
-						<div class="circle-clipper left">
+				<div class="circle-clipper right">
 							<div class="circle"></div>
-						</div>
-						<div class="gap-patch">
-							<div class="circle"></div>
-						</div>
-						<div class="circle-clipper right">
-							<div class="circle"></div>
-						</div>
+					</div>
+					</div>
+				<div class="spinner-layer spinner-red">
+					<div class="circle-clipper left">
+						<div class="circle"></div>
+					</div>
+					<div class="gap-patch">
+						<div class="circle"></div>
+					</div>
+					<div class="circle-clipper right">
+						<div class="circle"></div>
 					</div>
 				</div>
-				<div id="progress-name">
-					<p class="flow-text">Loading Goodies</p>
-					<p id="status">Initializing</p>
+				<div class="spinner-layer spinner-yellow">
+					<div class="circle-clipper left">
+						<div class="circle"></div>
+					</div>
+					<div class="gap-patch">
+						<div class="circle"></div>
+					</div>
+					<div class="circle-clipper right">
+						<div class="circle"></div>
+					</div>
 				</div>
+				<div class="spinner-layer spinner-green">
+					<div class="circle-clipper left">
+						<div class="circle"></div>
+					</div>
+					<div class="gap-patch">
+						<div class="circle"></div>
+					</div>
+					<div class="circle-clipper right">
+						<div class="circle"></div>
+					</div>
+				</div>
+			</div>
+			<div id="progress-name">
+				<p class="flow-text">Loading Goodies</p>
+				<p id="status">Initializing</p>
 			</div>
 		</div>
-		<header></header>
-		<main>
-			<div class="section container black no-pad-bot" id="video-wrapper">
-				<div class="row" id="meta">
-					<div id="rate" class="left">1.00</div>
-					<div id="title" class="flow-text center"></div>
-				</div>
-				<div id="animatedActions" class="center valign-wrapper">
-					<div id="action-play"><i class="material-icons large">play_arrow</i></div>
-					<div id="action-pause"><i class="material-icons large">pause</i></div>
-				</div>
-				<video class="hoverable" id="main" controls autoplay src="" aria-label="Main video"></video>
+	</div>
+	<header></header>
+	<main id="player">
+		<div class="section container black no-pad-bot" id="video-wrapper">
+			<div class="row" id="meta">
+				<div id="rate" class="left">1.00</div>
+				<div id="title" class="flow-text center"></div>
 			</div>
-			<div class="section container center" id="controls">
-				<i class="material-icons controller" id="back">skip_previous</i>
-				<i class="material-icons controller" id="playPause">pause</i>
-				<i class="material-icons controller" id="next">skip_next</i>
+			<div id="animatedActions" class="center valign-wrapper">
+				<div id="action-play"><i class="material-icons large">play_arrow</i></div>
+				<div id="action-pause"><i class="material-icons large">pause</i></div>
 			</div>
-		</main>
-		<footer class="footer">
-			<center>Created by <a href="https://github.com/vikaspotluri123" onclick="window.openExternal(this.href);return false;">Vikas Potluri</a></center>
-		</footer>
-	</body>
-	<script type="text/javascript">
-		window.$ = window.jQuery = require('./exec/jquery.js');
-		window.Hammer = require('./exec/lib/hammer.js');
-		window.fs = {};
-		window.fs.readDir = require('fs').readdirSync;
-		window.fs.stat = require('fs').statSync;
-		//window.data = require('electron-json-storage');
-		window.shuffle = require('secure-shuffle');
-		window.unique = require('array-unique');
-		window.openExternal = require('open');
-		window.electron = require('electron');
-		window.Promise = require('bluebird');
-		require('./exec/app.js');
-	</script>
-	<!--Materialize isn't really built for require; it's not worth the overhead-->
-	<script type="text/javascript" src="./exec/lib/material.js"></script>
-	<script type="text/javascript" defer>window.movieClips.initialize();</script>
+			<video class="hoverable" id="main" controls autoplay src="" aria-label="Main video"></video>
+		</div>
+		<div class="section container center" id="controls">
+			<i class="material-icons controller" id="back">skip_previous</i>
+			<i class="material-icons controller" id="playPause">pause</i>
+			<i class="material-icons controller" id="next">skip_next</i>
+		</div>
+	</main>
+	<footer class="footer">
+		<center>Created by <a href="https://github.com/vikaspotluri123"
+				onclick="window.openExternal(this.href);return false;">Vikas Potluri</a></center>
+	</footer>
+</body>
+<script type="text/javascript">
+	window.$ = window.jQuery = require('./exec/jquery.js');
+	window.Hammer = require('./exec/lib/hammer.js');
+	window.fs = {};
+	window.fs.readDir = require('fs').readdirSync;
+	window.fs.stat = require('fs').statSync;
+	//window.data = require('electron-json-storage');
+	window.shuffle = require('secure-shuffle');
+	window.unique = require('array-unique');
+	window.openExternal = require('open');
+	window.electron = require('electron');
+	window.Promise = require('bluebird');
+	require('./exec/app.js');
+</script>
+<!--Materialize isn't really built for require; it's not worth the overhead-->
+<script type="text/javascript" src="./exec/lib/material.js"></script>
+<script type="text/javascript" defer>window.movieClips.initialize();</script>
 </html>
