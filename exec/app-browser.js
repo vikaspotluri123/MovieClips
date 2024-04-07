@@ -54,7 +54,7 @@ class Directory {
 		const response = [];
 		for (const [file, store] of Object.entries(this.tree)) {
 			if (store instanceof Directory) {
-				response.concat(store.filterFlat(extensions));
+				response.push(...store.filterFlat(extensions));
 			} else {
 				const extension = file.split('.').pop();
 				if (extensions.includes(extension)) {
