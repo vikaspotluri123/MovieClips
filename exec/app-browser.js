@@ -177,10 +177,18 @@ const MovieClips = {
 		},
 		/**
 		 * @description: Sets the status text in the loading screen
-		 * @param {string} to: Status text to set
+		 * @param {string} to Status text to set
+		 * @param {string | null} color
 		 */
-		setStatus(to) {
-			document.querySelector('#status').textContent = to;
+		setStatus(to, color = null) {
+			/** @type {HTMLElement} */
+			const status = document.querySelector('#status');
+			status.textContent = to;
+			if (color) {
+				status.style.color = color;
+			} else {
+				delete status.style.color;
+			}
 		},
 		/**
 		 * @description: Sets the title element (above the video) to specified text
@@ -656,8 +664,11 @@ const MovieClips = {
 		}).catch(error => {
 			if (error instanceof NoDirectoriesError) {
 				movieClips.util.setLoading(false);
-				document.querySelector('#selector').removeAttribute('hidden')
-				document.querySelector('#player').setAttribute('hidden', 'true')
+				document.querySelector('#selector').removeAttribute('hidden');
+				document.querySelector('#player').setAttribute('hidden', 'true');
+			} else {
+				console.error(error);
+				movieClips.util.setStatus(`Something went wrong: ${error?.message ?? error}`, 'red');
 			}
 		});
 	}
