@@ -1,5 +1,26 @@
 // @ts-check
 
+/**
+ * @description perform an in-place Durstenfeld shuffle
+ * @param {unknown[]} array
+ */
+function shuffle(array) {
+	for (let i = array.length - 1; i > 0; --i) {
+		const swapIndex = Math.floor(Math.random() * (i + 1));
+		const swapData = array[i];
+		array[i] = array[swapIndex];
+		array[swapIndex] = swapData;
+	}
+}
+
+/**
+ * @template T
+ *
+ * @param {T[]} array an array with duplicate items
+ * @returns {T[]} a new array without duplicate items
+ */
+const unique = array => Array.from(new Set(array));
+
 class NoDirectoriesError extends Error {
 	constructor() {
 		super('No directories are available');

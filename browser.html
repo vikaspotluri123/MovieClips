@@ -94,20 +94,6 @@
 </body>
 <script src="./exec/jquery.js" async></script>
 <script src="./exec/lib/hammer.js" async></script>
-<script type="text/javascript">
-  window.shuffle = array => { // Durstenfeld shuffle
-    for (let i = array.length - 1; i > 0; --i) {
-      const swapIndex = Math.floor(Math.random() * (i + 1));
-      const swapData = array[i];
-      array[i] = array[swapIndex];
-      array[swapIndex] = swapData;
-    }
-  };
-  window.unique = array => Array.from(new Set(array));
-  window.openExternal = () => {
-    throw new Error('openExternal is not implemented')
-  };
-</script>
 <script src="./exec/app-browser.js"></script>
 <!--Materialize isn't really built for require; it's not worth the overhead-->
 <script type="text/javascript" src="./exec/lib/material.js"></script>
