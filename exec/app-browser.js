@@ -1,6 +1,10 @@
 // @ts-check
 
 /**
+ * @typedef {File & {fullName: string}} FileWithName
+ */
+
+/**
  * @description perform an in-place Durstenfeld shuffle
  * @param {unknown[]} array
  */
@@ -37,41 +41,58 @@ async function setProperty(store, key, value) {
 	store[key] = await value;
 }
 
+/**
+ * @param {FileSystemFileHandle} node
+ * @param {string} root
+ * @returns {Promise<FileWithName>}
+ */
+function getNodeFile(node, root) {
+	return node.getFile()
+		.then(/** @param {FileWithName} file */ file => {
+			file.fullName = `${root}/${file.name}`;
+			return file;
+		});
+}
+
 class Directory {
 	/**
 	 * @param {FileSystemDirectoryHandle} handle
 	 */
-	static async read(handle) {
+	static async read(handle, parent = null) {
 		const promises = [];
 
 		/**
-		 * @type {Record<string, Directory | File>}
+		 * @type {Record<string, Directory | FileWithName>}
 		 */
 		const tree = {};
+		const newParent = `${parent ?? '@'}/${handle.name}`;
 
 		for await (const node of handle.values()) {
 			if (node.kind === 'directory') {
-				promises.push(setProperty(tree, node.name, Directory.read(node)));
+				promises.push(setProperty(tree, node.name, Directory.read(node, newParent)));
 			} else {
-				promises.push(setProperty(tree, node.name, node.getFile()));
+				promises.push(setProperty(tree, node.name, getNodeFile(node, newParent)));
 			}
 		}
 
 		await Promise.all(promises);
-		return new Directory(tree);
+		return new Directory(tree, newParent);
 	}
 
 	/**
-	 * @param {Record<string, Directory | File>} tree
+	 * @param {Record<string, Directory | FileWithName>} tree
+	 * @param {string} fullName
 	 */
-	constructor(tree) {
+	constructor(tree, fullName) {
 		this.tree = tree;
+		this.name = fullName;
 	}
 
 	/**
 	 * @param {string[]} extensions
 	 */
 	filterFlat(extensions) {
+		/** @type {FileWithName[]} */
 		const response = [];
 		for (const [file, store] of Object.entries(this.tree)) {
 			if (store instanceof Directory) {
@@ -175,7 +196,7 @@ const MovieClips = {
 	mediaElement: () => document.getElementById('main'),
 	db: new MovieDb('movie-clips', 'file-handles'),
 	/**
-	 * @type {File[]}
+	 * @type {FileWithName[]}
 	 */
 	vids: [], // The array of scanned videos
 	isLoading: false, // Loading screen is showing
