@@ -1,6 +1,7 @@
 // @ts-check
 import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
+import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
 
 /**
@@ -38,10 +39,10 @@ class NoDirectoriesError extends Error {
  * @satisfies {import('../src/interfaces/movie-clips.ts').MovieClips}
  */
 const MovieClips = {
-	/** @returns {HTMLVideoElement} */
-	// @ts-expect-error
-	mediaElement: () => document.getElementById('main'),
 	db: new MovieDb('movie-clips', 'file-handles'),
+	elements: new ElementRegistry([
+		'body', '#loading-wrapper', '#progress-name', '#status', '#selector', '#directory-selector', '#player', '#video-wrapper', '#meta', '#rate', '#title', '#animatedActions', '#action-play', '#action-pause', '#main', '#controls', '#back', '#playPause', '#next',
+	]),
 	/**
 	 * @type {FileNode[]}
 	 */
@@ -67,9 +68,9 @@ const MovieClips = {
 		setLoading(to) {
 			movieClips.isLoading = Boolean(to);
 			if (to) {
-				document.querySelector('body').classList.add('loading');
+				movieClips.elements.read('body').classList.add('loading');
 			} else {
-				document.querySelector('body').classList.remove('loading');
+				movieClips.elements.read('body').classList.remove('loading');
 			}
 		},
 		/**
@@ -78,8 +79,7 @@ const MovieClips = {
 		 * @param {string | null} color
 		 */
 		setStatus(to, color = null) {
-			/** @type {HTMLElement} */
-			const status = document.querySelector('#status');
+			const status = movieClips.elements.read('#status');
 			status.textContent = to;
 			if (color) {
 				status.style.color = color;
@@ -92,7 +92,7 @@ const MovieClips = {
 		 * @param {string} title: Title to set
 		 */
 		setTitle(title) {
-			document.querySelector('#title').textContent = title;
+			movieClips.elements.read('#title').textContent = title;
 		},
 		/**
 		 * @description: Loads the specified movie into the player and adds start / stop settings
@@ -116,8 +116,7 @@ const MovieClips = {
 				return true;
 			}
 
-			console.log(movie);
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			// Load the movie
 			video.setAttribute('src', URL.createObjectURL(movie));
 			// Update the movie title area
@@ -183,10 +182,10 @@ const MovieClips = {
 	 */
 	mediaActions: {
 		play() {
-			return movieClips.mediaElement().play();
+			return movieClips.elements.read('#main').play();
 		},
 		pause() {
-			movieClips.mediaElement().pause();
+			movieClips.elements.read('#main').pause();
 		},
 		/**
 		 * @description: increase the speed of the video
@@ -194,7 +193,7 @@ const MovieClips = {
 		 * @returns {number} The new playback rate
 		 */
 		increaseSpeed(increment = 0.1) {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const current = video.playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
@@ -210,7 +209,7 @@ const MovieClips = {
 		 * @returns {number} The new playback rate
 		 */
 		decreaseSpeed(decrement = 0.1) {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const current = video.playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
@@ -226,7 +225,7 @@ const MovieClips = {
 		 * @returns {number} The new time
 		 */
 		scrollForward(seconds = 5) {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const current = video.currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
 			const max = video.duration - 0.5; // Half a second event buffer
@@ -242,7 +241,7 @@ const MovieClips = {
 		 * @returns {number} The new time
 		 */
 		scrollBackward(seconds = 5) {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const current = video.currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
 			const max = video.duration - 0.5; // Half a second event buffer
@@ -258,7 +257,7 @@ const MovieClips = {
 		 * @returns {number} The new volume level
 		 */
 		increaseVolume(percent = 0.05) { // Default increment of 5%
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const current = video.volume;
 			const min = 0;
 			const max = 1;
@@ -274,7 +273,7 @@ const MovieClips = {
 		 * @returns {number} The new volume level
 		 */
 		decreaseVolume(percent = 0.05) { // Default decrement of 5%
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const current = video.volume;
 			const min = 0;
 			const max = 1;
@@ -290,7 +289,7 @@ const MovieClips = {
 		 * @returns {number} The new time (should = ${seconds})
 		 */
 		moveTo(seconds = 0.1) {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			const min = 0.1; // Start a little after the beginning of the video
 			const max = video.duration - 0.5; // Half a second event buffer
 			seconds = ((seconds || min) > max) ? max : seconds;
@@ -307,33 +306,33 @@ const MovieClips = {
 			level = parseFloat(level.toFixed(2));
 			level = level < 0 ? 0 : level;
 			level = level > 1 ? 1 : level;
-			movieClips.mediaElement().volume = level;
+			movieClips.elements.read('#main').volume = level;
 			return level;
 		},
 		/**
 		 * @description: Mutes the video
 		 */
 		mute() {
-			movieClips.mediaElement().muted = true;
+			movieClips.elements.read('#main').muted = true;
 		},
 		/**
 		 * @description: Unmutes the video
 		 */
 		unMute() {
-			movieClips.mediaElement().muted = false;
+			movieClips.elements.read('#main').muted = false;
 		},
 		/**
 		 * @description: Switches between mute states
 		 */
 		toggleMute() {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			video.muted = !(video.muted);
 		},
 		/**
 		 * @description: Switches between play states
 		 */
 		togglePlaying() {
-			return (movieClips.mediaElement().paused ? movieClips.mediaActions.play() : movieClips.mediaActions.pause());
+			return (movieClips.elements.read('#main').paused ? movieClips.mediaActions.play() : movieClips.mediaActions.pause());
 		}
 	},
 	handlers: {
@@ -391,9 +390,9 @@ const MovieClips = {
 					movieClips.util.setStatus('Done... Goodbye');
 					movieClips.util.setLoading(false);
 				});
-				document.querySelector('#back').classList.add('disabled');
+				movieClips.elements.read('#back').classList.add('disabled');
 			} else {
-				document.querySelector('#back').classList.remove('disabled');
+				movieClips.elements.read('#back').classList.remove('disabled');
 				movieClips.util.setMovie(movieClips.index);
 			}
 		},
@@ -408,7 +407,7 @@ const MovieClips = {
 				movieClips.index--;
 				movieClips.util.setMovie(movieClips.index);
 			} else {
-				document.querySelector('#back').classList.add('disabled');
+				movieClips.elements.read('#back').classList.add('disabled');
 			}
 		},
 		/**
@@ -485,7 +484,7 @@ const MovieClips = {
 		 * @param {Event} [_] The `Event` object that was fired. Should not be called directly.
 		 */
 		play(_) {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			video.removeEventListener('ended', movieClips.handlers.next);
 			if (movieClips.shorty) {
 				movieClips.util.videoStop();
@@ -503,24 +502,24 @@ const MovieClips = {
 		 * @param {Event} [_] The `Event` object that was fired. If called directly, no object will be present
 		 */
 		ratechange(_) {
-			document.querySelector('#rate').textContent = parseFloat(this.playbackRate).toFixed(2);
+			movieClips.elements.read('#rate').textContent = parseFloat(this.playbackRate).toFixed(2);
 		}
 	},
 	initialize() {
 		movieClips.util.setLoading(true);
-		document.querySelector('#selector').setAttribute('hidden', 'true');
-		document.querySelector('#player').removeAttribute('hidden');
-		document.querySelector('#directory-selector').addEventListener('click', movieClips.handlers.directory);
+		movieClips.elements.read('#selector').setAttribute('hidden', 'true');
+		movieClips.elements.read('#player').removeAttribute('hidden');
+		movieClips.elements.read('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 		// We have to wait for the list to update
 		movieClips.util.updateList().then(() => {
-			const video = movieClips.mediaElement();
+			const video = movieClips.elements.read('#main');
 			movieClips.util.setStatus('Making buttons clickable');
-			document.querySelector('#back').addEventListener('click', movieClips.handlers.previous);
-			document.querySelector('#next').addEventListener('click', movieClips.handlers.next);
+			movieClips.elements.read('#back').addEventListener('click', movieClips.handlers.previous);
+			movieClips.elements.read('#next').addEventListener('click', movieClips.handlers.next);
 			video.addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
 			video.addEventListener('dblclick', movieClips.handlers.fullscreen);
 			movieClips.util.setStatus('Adding keyboard shortcuts');
-			document.querySelector('#playPause').addEventListener('click', mediaControls.eventHandlers.playPause);
+			movieClips.elements.read('#playPause').addEventListener('click', mediaControls.eventHandlers.playPause);
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
 			movieClips.util.setStatus('Loading video helpers');
@@ -537,8 +536,8 @@ const MovieClips = {
 		}).catch(error => {
 			if (error instanceof NoDirectoriesError) {
 				movieClips.util.setLoading(false);
-				document.querySelector('#selector').removeAttribute('hidden');
-				document.querySelector('#player').setAttribute('hidden', 'true');
+				movieClips.elements.read('#selector').removeAttribute('hidden');
+				movieClips.elements.read('#player').setAttribute('hidden', 'true');
 			} else {
 				console.error(error);
 				movieClips.util.setStatus(`Something went wrong: ${error?.message ?? error}`, 'red');
