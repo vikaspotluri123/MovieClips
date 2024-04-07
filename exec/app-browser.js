@@ -147,15 +147,16 @@ const MovieClips = {
 			}
 
 			console.log(movie);
+			const video = movieClips.mediaElement();
 			// Load the movie
-			movieClips.mediaElement().setAttribute('src', movie);
+			video.setAttribute('src', movie);
 			// Update the movie title area
 			let title = movie.split('/');
 			title = title[title.length - 1].split('.');
 			title = title[title.length - 2];
 			movieClips.util.setTitle(title);
 			// Actually load the movie
-			movieClips.mediaElement().load();
+			video.load();
 			return true;
 		},
 		/**
@@ -228,13 +229,14 @@ const MovieClips = {
 		 * @returns {number} The new playback rate
 		 */
 		increaseSpeed(increment = 0.1) {
-			const current = movieClips.mediaElement().playbackRate;
+			const video = movieClips.mediaElement();
+			const current = video.playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
 			let final = current + increment; // Default increment 0.1x
 			final = (final > max) ? max : final;
 			final = (final < min) ? min : final;
-			movieClips.mediaElement().playbackRate = final;
+			video.playbackRate = final;
 			return final;
 		},
 		/**
@@ -243,13 +245,14 @@ const MovieClips = {
 		 * @returns {number} The new playback rate
 		 */
 		decreaseSpeed(decrement = 0.1) {
-			const current = movieClips.mediaElement().playbackRate;
+			const video = movieClips.mediaElement();
+			const current = video.playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
 			let final = current - decrement; // Default decrement 0.1x
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			movieClips.mediaElement().playbackRate = final;
+			video.playbackRate = final;
 			return final;
 		},
 		/**
@@ -258,13 +261,14 @@ const MovieClips = {
 		 * @returns {number} The new time
 		 */
 		scrollForward(seconds = 5) {
-			const current = movieClips.mediaElement().currentTime;
+			const video = movieClips.mediaElement();
+			const current = video.currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = movieClips.mediaElement().duration - 0.5; // Half a second event buffer
+			const max = video.duration - 0.5; // Half a second event buffer
 			let final = current + seconds; // Default increment 5 seconds
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			movieClips.mediaElement().currentTime = final;
+			video.currentTime = final;
 			return final;
 		},
 		/**
@@ -273,13 +277,14 @@ const MovieClips = {
 ]		 * @returns {number} The new time
 		 */
 		scrollBackward(seconds = 5) {
-			const current = movieClips.mediaElement().currentTime;
+			const video = movieClips.mediaElement();
+			const current = video.currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = movieClips.mediaElement().duration - 0.5; // Half a second event buffer
+			const max = video.duration - 0.5; // Half a second event buffer
 			let final = current - seconds; // Default increment 5 seconds
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			movieClips.mediaElement().currentTime = final;
+			video.currentTime = final;
 			return final;
 		},
 		/**
@@ -288,13 +293,14 @@ const MovieClips = {
 		 * @returns {number} The new volume level
 		 */
 		increaseVolume(percent = 0.05) { // Default increment of 5%
-			const current = movieClips.mediaElement().volume;
+			const video = movieClips.mediaElement();
+			const current = video.volume;
 			const min = 0;
 			const max = 1;
 			let final = current + percent;
 			final = final < min ? min : final;
 			final = final > max ? max : final;
-			movieClips.mediaElement().volume = final;
+			video.volume = final;
 			return final;
 		},
 		/**
@@ -303,13 +309,14 @@ const MovieClips = {
 		 * @returns {number} The new volume level
 		 */
 		decreaseVolume(percent = 0.05) { // Default decrement of 5%
-			const current = movieClips.mediaElement().volume;
+			const video = movieClips.mediaElement();
+			const current = video.volume;
 			const min = 0;
 			const max = 1;
 			let final = current - percent;
 			final = final < min ? min : final;
 			final = final > max ? max : final;
-			movieClips.mediaElement().volume = final;
+			video.volume = final;
 			return final;
 		},
 		/**
@@ -318,11 +325,12 @@ const MovieClips = {
 		 * @returns {number} The new time (should = ${seconds})
 		 */
 		moveTo(seconds = 0.1) {
+			const video = movieClips.mediaElement();
 			const min = 0.1; // Start a little after the beginning of the video
-			const max = movieClips.mediaElement().duration - 0.5; // Half a second event buffer
+			const max = video.duration - 0.5; // Half a second event buffer
 			seconds = ((seconds || min) > max) ? max : seconds;
 			seconds = (seconds < min) ? min : seconds;
-			movieClips.mediaElement().currentTime = seconds;
+			video.currentTime = seconds;
 			return seconds;
 		},
 		/**
@@ -353,7 +361,8 @@ const MovieClips = {
 		 * @description: Switches between mute states
 		 */
 		toggleMute() {
-			movieClips.mediaElement().muted = !(movieClips.mediaElement().muted);
+			const video = movieClips.mediaElement();
+			video.muted = !(video.muted);
 		},
 		/**
 		 * @description: Switches between play states
@@ -531,11 +540,12 @@ const MovieClips = {
 		 * @param {Event} [_] The `Event` object that was fired. Should not be called directly.
 		 */
 		play(_) {
-			movieClips.mediaElement().removeEventListener('ended', movieClips.handlers.next);
+			const video = movieClips.mediaElement();
+			video.removeEventListener('ended', movieClips.handlers.next);
 			if (movieClips.shorty) {
 				movieClips.util.videoStop();
 			} else {
-				movieClips.mediaElement().addEventListener('ended', movieClips.handlers.next);
+				video.addEventListener('ended', movieClips.handlers.next);
 			}
 		},
 		pause(_) {
@@ -556,21 +566,22 @@ const MovieClips = {
 		document.querySelector('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 		// We have to wait for the list to update
 		movieClips.util.updateList().then(() => {
+			const video = movieClips.mediaElement();
 			movieClips.util.setStatus('Making buttons clickable');
 			document.querySelector('#back').addEventListener('click', movieClips.handlers.previous);
 			document.querySelector('#next').addEventListener('click', movieClips.handlers.next);
-			movieClips.mediaElement().addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
-			movieClips.mediaElement().addEventListener('dblclick', movieClips.handlers.fullscreen);
+			video.addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
+			video.addEventListener('dblclick', movieClips.handlers.fullscreen);
 			movieClips.util.setStatus('Adding keyboard shortcuts');
 			document.querySelector('#playPause').addEventListener('click', movieClips.handlers.playPause);
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
 			movieClips.util.setStatus('Loading video helpers');
-			movieClips.mediaElement().addEventListener('ratechange', movieClips.handlers.ratechange);
-			movieClips.mediaElement().addEventListener('play', movieClips.handlers.play);
-			movieClips.mediaElement().addEventListener('pause', movieClips.handlers.pause);
-			movieClips.mediaElement().addEventListener('loadedmetadata', movieClips.handlers.metadata);
-			movieClips.mediaElement().onerror = movieClips.handlers.next;
+			video.addEventListener('ratechange', movieClips.handlers.ratechange);
+			video.addEventListener('play', movieClips.handlers.play);
+			video.addEventListener('pause', movieClips.handlers.pause);
+			video.addEventListener('loadedmetadata', movieClips.handlers.metadata);
+			video.onerror = movieClips.handlers.next;
 			movieClips.util.setStatus('Starting Up');
 			if (movieClips.util.setMovie(0)) {
 				movieClips.util.setStatus('Done... Goodbye');
