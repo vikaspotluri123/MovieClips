@@ -164,7 +164,7 @@ const MovieClips = {
 		min: 10, // 180, // At least 3 minutes
 		max: 11 // 360 // At most 6 minutes
 	},
-	supported: ['mp4'], // Supported file extensions
+	supported: ['mp4', 'mkv'], // Supported file extensions
 	shortyTimer: -1, // Timeout for shorty; used to clear
 	shortyTime: { // Time info for shorty
 		set: -1, // The timer duration
