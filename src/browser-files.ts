@@ -44,7 +44,7 @@ export function filterFlat(directory: Directory, extensions: string[]) {
 				response.push(store);
 			}
 		} else {
-			response.push(...filterFlat(directory, extensions));
+			response.push(...filterFlat(store, extensions));
 		}
 	}
 
