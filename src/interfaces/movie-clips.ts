@@ -2,30 +2,32 @@ import {type MovieDb} from '../movie-db.ts';
 import {type FileNode} from '../browser-files.ts';
 import {ElementRegistry} from '../element-registry.ts';
 
+export type Elements = {
+	'body': HTMLBodyElement;
+	'#loading-wrapper': HTMLDivElement;
+	'#progress-name': HTMLDivElement;
+	'#status': HTMLParagraphElement;
+	'#selector': HTMLDivElement;
+	'#directory-selector': HTMLButtonElement;
+	'#player': HTMLElement;
+	'#video-wrapper': HTMLDivElement;
+	'#meta': HTMLDivElement;
+	'#rate': HTMLDivElement;
+	'#title': HTMLDivElement;
+	'#animatedActions': HTMLDivElement;
+	'#action-play': HTMLDivElement;
+	'#action-pause': HTMLDivElement;
+	'#main': HTMLVideoElement;
+	'#controls': HTMLDivElement;
+	'#back': HTMLElement;
+	'#playPause': HTMLElement;
+	'#next': HTMLElement;
+}
+
 export interface MovieClips {
 	db: MovieDb;
 	vids: FileNode[];
-	elements: ElementRegistry<{
-		'body': HTMLBodyElement;
-		'#loading-wrapper': HTMLDivElement;
-		'#progress-name': HTMLDivElement;
-		'#status': HTMLParagraphElement;
-		'#selector': HTMLDivElement;
-		'#directory-selector': HTMLButtonElement;
-		'#player': HTMLElement;
-		'#video-wrapper': HTMLDivElement;
-		'#meta': HTMLDivElement;
-		'#rate': HTMLDivElement;
-		'#title': HTMLDivElement;
-		'#animatedActions': HTMLDivElement;
-		'#action-play': HTMLDivElement;
-		'#action-pause': HTMLDivElement;
-		'#main': HTMLVideoElement;
-		'#controls': HTMLDivElement;
-		'#back': HTMLElement;
-		'#playPause': HTMLElement;
-		'#next': HTMLElement;
-	}>;
+	elements: ElementRegistry<Elements>;
 	isLoading: boolean;
 	shorty: boolean;
 	index: number;

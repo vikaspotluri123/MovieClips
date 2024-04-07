@@ -1,4 +1,5 @@
 // @ts-check
+import {initialized} from '../src/initialization.ts';
 import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
@@ -541,6 +542,9 @@ const MovieClips = {
 			video.addEventListener('pause', movieClips.handlers.pause);
 			video.addEventListener('loadedmetadata', movieClips.handlers.metadata);
 			video.onerror = movieClips.handlers.next;
+
+			initialized();
+
 			movieClips.util.setStatus('Starting Up');
 			if (movieClips.util.setMovie(0)) {
 				movieClips.util.setStatus('Done... Goodbye');
