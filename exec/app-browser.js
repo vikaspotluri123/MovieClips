@@ -451,6 +451,7 @@ const MovieClips = {
 		async directory() {
 			const handle = await window.showDirectoryPicker({mode: 'read'});
 			await movieClips.db.store(handle.name, handle);
+			movieClips.initialize();
 		},
 		/**
 		 * @description: Handles switching between fullscreen states
@@ -638,6 +639,8 @@ const MovieClips = {
 	},
 	initialize() {
 		movieClips.util.setLoading(true);
+		document.querySelector('#selector').setAttribute('hidden', 'true');
+		document.querySelector('#player').removeAttribute('hidden');
 		document.querySelector('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 		// We have to wait for the list to update
 		movieClips.util.updateList().then(() => {
