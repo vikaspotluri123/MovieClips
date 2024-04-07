@@ -1,7 +1,9 @@
 // @ts-check
 
 /**
- * @typedef {File & {fullName: string}} FileWithName
+ * @typedef {File & {fullName: string}} FileNode
+ * @typedef {Record<string, Directory | FileNode>} DirectoryNode
+ * @typedef {{fullName: string; tree: DirectoryNode}} Directory
  */
 
 /**
@@ -44,69 +46,63 @@ async function setProperty(store, key, value) {
 /**
  * @param {FileSystemFileHandle} node
  * @param {string} root
- * @returns {Promise<FileWithName>}
+ * @returns {Promise<FileNode>}
  */
 function getNodeFile(node, root) {
 	return node.getFile()
-		.then(/** @param {FileWithName} file */ file => {
+		.then(/** @param {FileNode} file */ file => {
 			file.fullName = `${root}/${file.name}`;
 			return file;
 		});
 }
 
-class Directory {
-	/**
-	 * @param {FileSystemDirectoryHandle} handle
-	 */
-	static async read(handle, parent = null) {
+/**
+ * @param {FileSystemDirectoryHandle} handle
+ * @returns {Promise<Directory>}
+ */
+async function readDirectory(handle, parent = null) {
 		const promises = [];
 
 		/**
-		 * @type {Record<string, Directory | FileWithName>}
+		 * @type {DirectoryNode}
 		 */
 		const tree = {};
 		const newParent = `${parent ?? '@'}/${handle.name}`;
 
 		for await (const node of handle.values()) {
 			if (node.kind === 'directory') {
-				promises.push(setProperty(tree, node.name, Directory.read(node, newParent)));
+				promises.push(setProperty(tree, node.name, readDirectory(node, newParent)));
 			} else {
 				promises.push(setProperty(tree, node.name, getNodeFile(node, newParent)));
 			}
 		}
 
 		await Promise.all(promises);
-		return new Directory(tree, newParent);
+		return {
+			fullName: newParent,
+			tree,
+		};
 	}
 
-	/**
-	 * @param {Record<string, Directory | FileWithName>} tree
-	 * @param {string} fullName
-	 */
-	constructor(tree, fullName) {
-		this.tree = tree;
-		this.name = fullName;
-	}
-
-	/**
-	 * @param {string[]} extensions
-	 */
-	filterFlat(extensions) {
-		/** @type {FileWithName[]} */
-		const response = [];
-		for (const [file, store] of Object.entries(this.tree)) {
-			if (store instanceof Directory) {
-				response.push(...store.filterFlat(extensions));
-			} else {
-				const extension = file.split('.').pop();
-				if (extensions.includes(extension)) {
-					response.push(store);
-				}
+/**
+  * @param {Directory} directory
+	* @param {string[]} extensions
+	*/
+function filterFlat(directory, extensions) {
+	/** @type {FileNode[]} */
+	const response = [];
+	for (const [file, store] of Object.entries(directory.tree)) {
+		if (store instanceof File) {
+			const extension = file.split('.').pop();
+			if (extensions.includes(extension)) {
+				response.push(store);
 			}
+		} else {
+			response.push(...filterFlat(directory, extensions));
 		}
-
-		return response;
 	}
+
+	return response;
 }
 
 /**
@@ -196,7 +192,7 @@ const MovieClips = {
 	mediaElement: () => document.getElementById('main'),
 	db: new MovieDb('movie-clips', 'file-handles'),
 	/**
-	 * @type {FileWithName[]}
+	 * @type {FileNode[]}
 	 */
 	vids: [], // The array of scanned videos
 	isLoading: false, // Loading screen is showing
@@ -298,8 +294,8 @@ const MovieClips = {
 			for (const directory of directories) {
 				movieClips.util.setStatus(`Reading Folder: ${directory}`);
 				const handle = await movieClips.db.fetch(directory);
-				const dirObject = await Directory.read(handle);
-				movieClips.vids = movieClips.vids.concat(dirObject.filterFlat(movieClips.supported));
+				const dirObject = await readDirectory(handle);
+				movieClips.vids = movieClips.vids.concat(filterFlat(dirObject, movieClips.supported));
 			}
 
 			// throw new Error('oops')
