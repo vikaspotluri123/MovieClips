@@ -6,21 +6,6 @@ class NoDirectoriesError extends Error {
 	}
 }
 
-class MovieClipsFile {
-	/**
-	 * @param {FileSystemFileHandle} handle
-	 */
-	static async read(handle) {
-		const file = await handle.getFile();
-		const string = `${file.name} (${file.size})`
-		return new MovieClipsFile(string);
-	}
-
-	constructor(string) {
-		this.string = string;
-	}
-}
-
 /**
  * @template T
  * @param {Record<string, T>} store
@@ -39,7 +24,7 @@ class Directory {
 		const promises = [];
 
 		/**
-		 * @type {Record<string, Directory | string>}
+		 * @type {Record<string, Directory | File>}
 		 */
 		const tree = {};
 
@@ -47,7 +32,7 @@ class Directory {
 			if (node.kind === 'directory') {
 				promises.push(setProperty(tree, node.name, Directory.read(node)));
 			} else {
-				promises.push(setProperty(tree, node.name, MovieClipsFile.read(node)));
+				promises.push(setProperty(tree, node.name, node.getFile()));
 			}
 		}
 
@@ -55,8 +40,30 @@ class Directory {
 		return new Directory(tree);
 	}
 
+	/**
+	 * @param {Record<string, Directory | File>} tree
+	 */
 	constructor(tree) {
-		Object.assign(this, tree);
+		this.tree = tree;
+	}
+
+	/**
+	 * @param {string[]} extensions
+	 */
+	filterFlat(extensions) {
+		const response = [];
+		for (const [file, store] of Object.entries(this.tree)) {
+			if (store instanceof Directory) {
+				response.concat(store.filterFlat(extensions));
+			} else {
+				const extension = file.split('.').pop();
+				if (extensions.includes(extension)) {
+					response.push(store);
+				}
+			}
+		}
+
+		return response;
 	}
 }
 
@@ -84,9 +91,8 @@ class MovieDb {
 	}
 
 	/**
-	 * @template T
 	 * @param {string} key
-	 * @returns {Promise<T>}
+	 * @returns {Promise<FileSystemDirectoryHandle>}
 	 */
 	async fetch(key) {
 		const db = await this._db;
@@ -97,11 +103,9 @@ class MovieDb {
 		return promisifyRequest(request);
 	}
 
-
 	/**
-	 * @template T
 	 * @param {string} key
-	 * @param {T} value
+	 * @param {FileSystemDirectoryHandle} value
 	 */
 	async store(key, value) {
 		const db = await this._db;
@@ -110,6 +114,25 @@ class MovieDb {
 			.put(value, key);
 
 		await promisifyRequest(request);
+	}
+
+	/**
+	 * @returns {Promise<string[]>}
+	 */
+	async getDirectories() {
+		const db = await this._db;
+		const request = db.transaction([this.storeName], 'readonly')
+			.objectStore(this.storeName)
+			.getAllKeys();
+
+		const keys = await promisifyRequest(request);
+		if (!keys.every(key => typeof key ==='string')) {
+			const invalidKeys = keys.filter(key => typeof key !== "string").join(', ');
+			throw new Error(`Key(s) have invalid type: ${invalidKeys}`);
+		}
+
+		// @ts-expect-error the next version of typescript will understand that `keys` is guaranteed to be a `string[]`
+		return keys;
 	}
 
 	/**
@@ -130,6 +153,9 @@ const MovieClips = {
 	// @ts-expect-error
 	mediaElement: () => document.getElementById('main'),
 	db: new MovieDb('movie-clips', 'file-handles'),
+	/**
+	 * @type {File[]}
+	 */
 	vids: [], // The array of scanned videos
 	isLoading: false, // Loading screen is showing
 	shorty: true, // Stop after {range} seconds or play to end
@@ -145,24 +171,6 @@ const MovieClips = {
 		at: Date.now() // Current time
 	},
 	util: {
-		/**
-		 * @description: Returns all of the files in a given folder, recursively
-		 * @param {String} folder: The folder to scan
-		 * @returns {Array} All of the files in specified `${folder}`
-		 */
-		allFiles(folder) {
-			let results = [];
-			fs.readDir(folder).forEach(file => {
-				file = `${folder}/${file}`;
-				const stat = fs.stat(file);
-				if (stat && stat.isDirectory()) {
-					results = results.concat(movieClips.util.allFiles(file));
-				} else {
-					results.push(file);
-				}
-			});
-			return results;
-		},
 		/**
 		 * @description: Sets the visibility of the loading screens
 		 * @param {boolean} to: Should the loading be enabled
@@ -210,8 +218,7 @@ const MovieClips = {
 			}
 
 			// Check if the movie is supported based on the file extension (weed out the bad ones early)
-			let ext = movie.split('.');
-			ext = ext[ext.length - 1];
+			const ext = movie.name.split('.').pop();
 			if (!movieClips.supported.includes(ext)) {
 				console.warn('[rejection]', movie);
 				movieClips.vids.splice(index, 1); // Remove because it's not needed
@@ -223,47 +230,43 @@ const MovieClips = {
 			console.log(movie);
 			const video = movieClips.mediaElement();
 			// Load the movie
-			video.setAttribute('src', movie);
+			video.setAttribute('src', URL.createObjectURL(movie));
 			// Update the movie title area
-			let title = movie.split('/');
-			title = title[title.length - 1].split('.');
-			title = title[title.length - 2];
+			const title = movie.name.split('/')
+				.pop()
+				.split('.')
+				.at(-2);
 			movieClips.util.setTitle(title);
 			// Actually load the movie
 			video.load();
 			return true;
 		},
 		/**
-		 * @description: Populates ${vids} with the files by scanning saved directories
+		 * @description Populates ${vids} with the files by scanning saved directories
 		 * @returns {Promise<void>}
 		 */
-		updateList() {
-			return new Promise(resolve => {
-				movieClips.util.setStatus('Reading Folders');
-				let dirs = localStorage.getItem('dirs');
-				if (!dirs) {
-					throw new NoDirectoriesError();
-					return resolve();
-				}
+		async updateList() {
+			movieClips.util.setStatus('Reading Folders');
+			const directories = await movieClips.db.getDirectories();
 
-				dirs = JSON.parse(dirs);
-				dirs.forEach(dir => {
-					movieClips.util.setStatus(`Reading Folder ${dir}`);
-					const files = movieClips.util.allFiles(dir);
-					movieClips.vids = movieClips.vids.concat(files);
-				});
-				movieClips.util.setStatus('Removing Duplicates');
-				movieClips.vids = unique(movieClips.vids);
-				movieClips.util.setStatus('Randomizing');
-				shuffle(movieClips.vids); // See mutates input. See Secure-shuffle documentation
-				movieClips.util.setStatus('Removing unplayable tracks');
-				movieClips.vids = movieClips.vids.map(video => {
-					let ext = video.split('.');
-					ext = ext[ext.length - 1];
-					return (movieClips.supported.includes(ext)) ? video : null;
-				}).filter(Boolean);
-				resolve();
-			});
+			if (directories.length === 0) {
+				throw new NoDirectoriesError();
+			}
+
+			for (const directory of directories) {
+				movieClips.util.setStatus(`Reading Folder: ${directory}`);
+				const handle = await movieClips.db.fetch(directory);
+				const dirObject = await Directory.read(handle);
+				debugger;
+				movieClips.vids = movieClips.vids.concat(dirObject.filterFlat(movieClips.supported));
+			}
+
+			// throw new Error('oops')
+
+			movieClips.util.setStatus('Removing Duplicates');
+			movieClips.vids = unique(movieClips.vids);
+			movieClips.util.setStatus('Randomizing');
+			shuffle(movieClips.vids); // See mutates input. See Secure-shuffle documentation
 		},
 		/**
 		 * @description: sets timers to stop after shorty duration
