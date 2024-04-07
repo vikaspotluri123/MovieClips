@@ -117,7 +117,7 @@ const MovieClips = {
 				console.warn('[rejection]', movie);
 				movieClips.vids.splice(index, 1); // Remove because it's not needed
 				index--;
-				movieClips.handlers.next();
+				mediaControls.eventHandlers.next();
 				return true;
 			}
 
@@ -176,7 +176,7 @@ const MovieClips = {
 				}
 
 				console.log(`Next video after ${stopAfter / 1000} seconds`);
-				movieClips.shortyTimer = setTimeout(movieClips.handlers.next, stopAfter);
+				movieClips.shortyTimer = setTimeout(mediaControls.eventHandlers.next, stopAfter);
 				movieClips.shortyTime.set = stopAfter;
 				movieClips.shortyTime.at = Date.now();
 			} else {
@@ -372,55 +372,6 @@ const MovieClips = {
 			this.currentTime = start;
 		},
 		/**
-		 * @description: Moves to the next video [when the current video is over or times out (shorty)]
-		 * @param {Event | string} [event] The `Event` object that was fired. If called directly, no object will be present
-		 */
-		next(event) {
-			if (typeof event === 'object') {
-				event.preventDefault();
-			}
-
-			// Reset shorty stuff
-			movieClips.shortyTime.set = -1;
-			if (movieClips.shortyTimer) {
-				clearTimeout(movieClips.shortyTimer);
-			}
-
-			movieClips.index++;
-
-			// Check if at end of array
-			if (movieClips.index >= movieClips.vids.length - 1) {
-				movieClips.index = 0;
-				movieClips.vids = [];
-				movieClips.util.setLoading(true);
-				console.info('initializing');
-				movieClips.util.updateList().then(() => {
-					movieClips.util.setStatus('Starting Up');
-					movieClips.util.setMovie(0);
-					movieClips.util.setStatus('Done... Goodbye');
-					movieClips.util.setLoading(false);
-				});
-				movieClips.elements.read('#back').classList.add('disabled');
-			} else {
-				movieClips.elements.read('#back').classList.remove('disabled');
-				movieClips.util.setMovie(movieClips.index);
-			}
-		},
-		/**
-		 * @description: Movies to the previous video
-		 * @param {Event} [event] The `Event` object that was fired. If called directly, no object will be present
-		 */
-		previous(event) {
-			// Make sure it's possible to go back
-			if (movieClips.index > 0) {
-				event?.preventDefault();
-				movieClips.index--;
-				movieClips.util.setMovie(movieClips.index);
-			} else {
-				movieClips.elements.read('#back').classList.add('disabled');
-			}
-		},
-		/**
 		 * @description: Handles keypress events for keyboard shortcuts
 		 * @param {KeyboardEvent} event The `Event` object that was fired. Should not be called directly
 		 */
@@ -447,7 +398,7 @@ const MovieClips = {
 					movieClips.mediaActions.toggleMute();
 					break;
 				case 110:
-					movieClips.handlers.next();
+					mediaControls.eventHandlers.next();
 					break;
 				case 115: // @key {s}
 					movieClips.mediaActions.decreaseSpeed();
@@ -467,7 +418,7 @@ const MovieClips = {
 					movieClips.handlers.fullscreen();
 					break;
 				case 35: // @key {end}
-					movieClips.handlers.next();
+					mediaControls.eventHandlers.next();
 					break;
 				case 36: // @key {home}
 					movieClips.mediaActions.moveTo(0);
@@ -495,11 +446,11 @@ const MovieClips = {
 		 */
 		play(_) {
 			const video = movieClips.elements.read('#main');
-			video.removeEventListener('ended', movieClips.handlers.next);
+			video.removeEventListener('ended', mediaControls.eventHandlers.next);
 			if (movieClips.shorty) {
 				movieClips.util.videoStop();
 			} else {
-				video.addEventListener('ended', movieClips.handlers.next);
+				video.addEventListener('ended', mediaControls.eventHandlers.next);
 			}
 		},
 		pause(_) {
@@ -528,8 +479,8 @@ const MovieClips = {
 		movieClips.util.updateList().then(() => {
 			const video = movieClips.elements.read('#main');
 			movieClips.util.setStatus('Making buttons clickable');
-			movieClips.elements.read('#back').addEventListener('click', movieClips.handlers.previous);
-			movieClips.elements.read('#next').addEventListener('click', movieClips.handlers.next);
+			movieClips.elements.read('#back').addEventListener('click', mediaControls.eventHandlers.previous);
+			movieClips.elements.read('#next').addEventListener('click', mediaControls.eventHandlers.next);
 			video.addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
 			video.addEventListener('dblclick', movieClips.handlers.fullscreen);
 			movieClips.util.setStatus('Adding keyboard shortcuts');
@@ -541,7 +492,7 @@ const MovieClips = {
 			video.addEventListener('play', movieClips.handlers.play);
 			video.addEventListener('pause', movieClips.handlers.pause);
 			video.addEventListener('loadedmetadata', movieClips.handlers.metadata);
-			video.onerror = movieClips.handlers.next;
+			video.onerror = mediaControls.eventHandlers.next;
 
 			initialized();
 
