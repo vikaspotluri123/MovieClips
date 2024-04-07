@@ -55,7 +55,7 @@ const MovieClips = {
 		max: 11 // 360 // At most 6 minutes
 	},
 	supported: ['mp4', 'mkv'], // Supported file extensions
-	shortyTimer: -1, // Timeout for shorty; used to clear
+	shortyTimer: null, // Timeout for shorty; used to clear
 	shortyTime: { // Time info for shorty
 		set: -1, // The timer duration
 		at: Date.now() // Current time
@@ -84,6 +84,8 @@ const MovieClips = {
 			if (color) {
 				status.style.color = color;
 			} else {
+				// TODO: determine if this actually works
+				// @ts-ignore
 				delete status.style.color;
 			}
 		},
@@ -107,12 +109,14 @@ const MovieClips = {
 			}
 
 			// Check if the movie is supported based on the file extension (weed out the bad ones early)
+			/** @type {string} */
+			// @ts-expect-error
 			const ext = movie.name.split('.').pop();
 			if (!movieClips.supported.includes(ext)) {
 				console.warn('[rejection]', movie);
 				movieClips.vids.splice(index, 1); // Remove because it's not needed
 				index--;
-				movieClips.handlers.next(null);
+				movieClips.handlers.next();
 				return true;
 			}
 
@@ -120,7 +124,9 @@ const MovieClips = {
 			// Load the movie
 			video.setAttribute('src', URL.createObjectURL(movie));
 			// Update the movie title area
-			const title = movie.name.split('/')
+			/** @type {string} */
+			// @ts-expect-error
+			const title = movie.fullName.split('/')
 				.pop()
 				.split('.')
 				.at(-2);
@@ -351,30 +357,33 @@ const MovieClips = {
 		},
 		/**
 		 * @description: Sets the start and stop point of the video
+		 * @this {HTMLVideoElement}
 		 * @param {Event} [_] `Event` object that was fired. If called directly, no object will be present
 		 */
 		metadata(_) {
 			// @todo add full video support
 			const len = this.duration;
 			let start = Math.floor((Math.random() * (len - 0.5 + 1)) + 0.5);
-			if ((len - start) < movieClips.range.upper) {
-				start = len - movieClips.range.upper;
+			if ((len - start) < movieClips.range.max) {
+				start = len - movieClips.range.max;
 			}
 
 			this.currentTime = start;
 		},
 		/**
 		 * @description: Moves to the next video [when the current video is over or times out (shorty)]
-		 * @param {Event} [event] The `Event` object that was fired. If called directly, no object will be present
+		 * @param {Event | string} [event] The `Event` object that was fired. If called directly, no object will be present
 		 */
 		next(event) {
-			if (event) {
+			if (typeof event === 'object') {
 				event.preventDefault();
 			}
 
 			// Reset shorty stuff
 			movieClips.shortyTime.set = -1;
-			clearTimeout(movieClips.shortyTimer);
+			if (movieClips.shortyTimer) {
+				clearTimeout(movieClips.shortyTimer);
+			}
 
 			movieClips.index++;
 
@@ -403,7 +412,7 @@ const MovieClips = {
 		previous(event) {
 			// Make sure it's possible to go back
 			if (movieClips.index > 0) {
-				event.preventDefault();
+				event?.preventDefault();
 				movieClips.index--;
 				movieClips.util.setMovie(movieClips.index);
 			} else {
@@ -449,7 +458,7 @@ const MovieClips = {
 		},
 		/**
 		 * @description: Handles keydown events for special keys for keyboard shortcuts. These keys don't trigger keypressed
-		 * @param {KeyboardEvent} [event] The `Event` object that was fired. Should not be called directly.
+		 * @param {KeyboardEvent} event The `Event` object that was fired. Should not be called directly.
 		 */
 		keydown(event) {
 			switch (event.keyCode) {
@@ -493,16 +502,20 @@ const MovieClips = {
 			}
 		},
 		pause(_) {
-			clearTimeout(movieClips.shortyTimer);
+			if (movieClips.shortyTimer) {
+				clearTimeout(movieClips.shortyTimer);
+			}
+
 			console.log('timeout cleared');
 			movieClips.shortyTime.set = Date.now() - movieClips.shortyTime.at;
 		},
 		/**
 		 * @description: Updates the UI when video speed is changed
+		 * @this {HTMLVideoElement}
 		 * @param {Event} [_] The `Event` object that was fired. If called directly, no object will be present
 		 */
 		ratechange(_) {
-			movieClips.elements.read('#rate').textContent = parseFloat(this.playbackRate).toFixed(2);
+			movieClips.elements.read('#rate').textContent = this.playbackRate.toFixed(2);
 		}
 	},
 	initialize() {

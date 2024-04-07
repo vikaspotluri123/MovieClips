@@ -34,7 +34,7 @@ export interface MovieClips {
 		max: number;
 	};
 	supported: string[];
-	shortyTimer: number;
+	shortyTimer: ReturnType<typeof setTimeout> | null;
 	shortyTime: {
 		set: number;
 		at: number;
@@ -67,10 +67,10 @@ export interface MovieClips {
 		directory: () => Promise<void>;
 		fullscreen: (event?: Event) => void;
 		metadata: (event?: Event) => void;
-		next: (event?: Event) => void;
+		next: (event?: Event | string) => void;
 		previous: (event?: Event) => void;
 		keypress: (event: KeyboardEvent) => void;
-		keydown: (event?: KeyboardEvent) => void;
+		keydown: (event: KeyboardEvent) => void;
 		play: (event?: Event) => void;
 		pause: (event?: any) => void;
 		ratechange: (event?: Event) => void;
