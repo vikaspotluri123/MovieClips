@@ -1,9 +1,8 @@
 // @ts-check
+import {filterFlat, readDirectory} from '../src/browser-files.ts';
 
 /**
- * @typedef {File & {fullName: string}} FileNode
- * @typedef {Record<string, Directory | FileNode>} DirectoryNode
- * @typedef {{fullName: string; tree: DirectoryNode}} Directory
+ * @typedef {import('../src/browser-files.js').FileNode} FileNode
  */
 
 /**
@@ -31,78 +30,6 @@ class NoDirectoriesError extends Error {
 	constructor() {
 		super('No directories are available');
 	}
-}
-
-/**
- * @template T
- * @param {Record<string, T>} store
- * @param {string} key
- * @param {Promise<T>} value
- */
-async function setProperty(store, key, value) {
-	store[key] = await value;
-}
-
-/**
- * @param {FileSystemFileHandle} node
- * @param {string} root
- * @returns {Promise<FileNode>}
- */
-function getNodeFile(node, root) {
-	return node.getFile()
-		.then(/** @param {FileNode} file */ file => {
-			file.fullName = `${root}/${file.name}`;
-			return file;
-		});
-}
-
-/**
- * @param {FileSystemDirectoryHandle} handle
- * @returns {Promise<Directory>}
- */
-async function readDirectory(handle, parent = null) {
-		const promises = [];
-
-		/**
-		 * @type {DirectoryNode}
-		 */
-		const tree = {};
-		const newParent = `${parent ?? '@'}/${handle.name}`;
-
-		for await (const node of handle.values()) {
-			if (node.kind === 'directory') {
-				promises.push(setProperty(tree, node.name, readDirectory(node, newParent)));
-			} else {
-				promises.push(setProperty(tree, node.name, getNodeFile(node, newParent)));
-			}
-		}
-
-		await Promise.all(promises);
-		return {
-			fullName: newParent,
-			tree,
-		};
-	}
-
-/**
-  * @param {Directory} directory
-	* @param {string[]} extensions
-	*/
-function filterFlat(directory, extensions) {
-	/** @type {FileNode[]} */
-	const response = [];
-	for (const [file, store] of Object.entries(directory.tree)) {
-		if (store instanceof File) {
-			const extension = file.split('.').pop();
-			if (extensions.includes(extension)) {
-				response.push(store);
-			}
-		} else {
-			response.push(...filterFlat(directory, extensions));
-		}
-	}
-
-	return response;
 }
 
 /**
