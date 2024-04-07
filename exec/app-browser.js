@@ -33,6 +33,9 @@ class NoDirectoriesError extends Error {
 	}
 }
 
+/**
+ * @satisfies {import('../src/interfaces/movie-clips.ts').MovieClips}
+ */
 const MovieClips = {
 	/** @returns {HTMLVideoElement} */
 	// @ts-expect-error
@@ -566,7 +569,7 @@ const MovieClips = {
 // @ts-expect-error
 window.movieClips ??= MovieClips;
 /**
- * @type {typeof MovieClips}
+ * @type {import('../src/interfaces/movie-clips.ts').MovieClips}
  */
 // @ts-expect-error
 const movieClips = window.movieClips;
