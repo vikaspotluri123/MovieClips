@@ -349,8 +349,8 @@ const MovieClips = {
 		},
 		/**
 		 * @description: Rewinds the video
-[		 * @param {number} [seconds] How much to decrease the current time by
-]		 * @returns {number} The new time
+		 * @param {number} [seconds] How much to decrease the current time by
+		 * @returns {number} The new time
 		 */
 		scrollBackward(seconds = 5) {
 			const video = movieClips.mediaElement();
