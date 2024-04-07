@@ -60,10 +60,76 @@ class Directory {
 	}
 }
 
+/**
+ * @template T
+ * @param {T extends Record<'onerror' | 'onsuccess' | 'result' | 'error', any> ? T : never} request
+ * @returns {Promise<Awaited<T['result']>>}
+ */
+function promisifyRequest(request) {
+	return new Promise((resolve, reject) => {
+		request.onsuccess = () => resolve(request.result);
+		request.onerror = () => reject(request.error);
+	});
+}
+
+class MovieDb {
+	/**
+	 * @param {string} dbName
+	 * @param {string} storeName
+	 */
+	constructor(dbName, storeName) {
+		this.dbName = dbName;
+		this.storeName = storeName;
+		this._db = this._initialize();
+	}
+
+	/**
+	 * @template T
+	 * @param {string} key
+	 * @returns {Promise<T>}
+	 */
+	async fetch(key) {
+		const db = await this._db;
+		const request = db.transaction([this.storeName], 'readonly')
+			.objectStore(this.storeName)
+			.get(key);
+
+		return promisifyRequest(request);
+	}
+
+
+	/**
+	 * @template T
+	 * @param {string} key
+	 * @param {T} value
+	 */
+	async store(key, value) {
+		const db = await this._db;
+		const request = db.transaction([this.storeName], 'readwrite')
+			.objectStore(this.storeName)
+			.put(value, key);
+
+		await promisifyRequest(request);
+	}
+
+	/**
+	 * @private
+	 */
+	async _initialize() {
+		const request = window.indexedDB.open(this.dbName, 1);
+		request.onupgradeneeded = () => {
+			return request.result.createObjectStore(this.storeName);
+		};
+
+		return promisifyRequest(request);
+	}
+}
+
 const MovieClips = {
 	/** @returns {HTMLVideoElement} */
 	// @ts-expect-error
 	mediaElement: () => document.getElementById('main'),
+	db: new MovieDb('movie-clips', 'file-handles'),
 	vids: [], // The array of scanned videos
 	isLoading: false, // Loading screen is showing
 	shorty: true, // Stop after {range} seconds or play to end
