@@ -257,7 +257,6 @@ const MovieClips = {
 				movieClips.util.setStatus(`Reading Folder: ${directory}`);
 				const handle = await movieClips.db.fetch(directory);
 				const dirObject = await Directory.read(handle);
-				debugger;
 				movieClips.vids = movieClips.vids.concat(dirObject.filterFlat(movieClips.supported));
 			}
 
