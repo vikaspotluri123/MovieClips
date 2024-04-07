@@ -447,9 +447,8 @@ const MovieClips = {
 	},
 	handlers: {
 		async directory() {
-			const handle = await window.showDirectoryPicker();
-			const directory = await Directory.read(handle);
-			// TODO
+			const handle = await window.showDirectoryPicker({mode: 'read'});
+			await movieClips.db.store(handle.name, handle);
 		},
 		/**
 		 * @description: Handles switching between fullscreen states
