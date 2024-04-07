@@ -1,6 +1,7 @@
 // @ts-check
 import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
+import * as mediaControls from '../src/components/media-controls.ts';
 
 /**
  * @typedef {import('../src/browser-files.js').FileNode} FileNode
@@ -411,26 +412,6 @@ const MovieClips = {
 			}
 		},
 		/**
-		 * @description: Controls the state of shorty (next clip after ${range})
-		 * @param {Event} [_] The `Event` object that was fired. If called directly, no object will be present
-		 */
-		playPause(_) {
-			const current = this.textContent;
-			if (current === 'pause') {
-				movieClips.shorty = false;
-				clearTimeout(movieClips.shortyTimer);
-				console.log('timeout cleared');
-				movieClips.shortyTime.set = -1;
-				this.textContent = 'play_arrow';
-				Materialize.toast('Snippets Disabled', 2000);
-			} else {
-				movieClips.shorty = true;
-				movieClips.util.videoStop();
-				this.textContent = 'pause';
-				Materialize.toast('Snippets Enabled', 2000);
-			}
-		},
-		/**
 		 * @description: Handles keypress events for keyboard shortcuts
 		 * @param {KeyboardEvent} event The `Event` object that was fired. Should not be called directly
 		 */
@@ -539,7 +520,7 @@ const MovieClips = {
 			video.addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
 			video.addEventListener('dblclick', movieClips.handlers.fullscreen);
 			movieClips.util.setStatus('Adding keyboard shortcuts');
-			document.querySelector('#playPause').addEventListener('click', movieClips.handlers.playPause);
+			document.querySelector('#playPause').addEventListener('click', mediaControls.eventHandlers.playPause);
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
 			movieClips.util.setStatus('Loading video helpers');
