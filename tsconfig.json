@@ -1,0 +1,28 @@
+{
+  "include": [
+    "src",
+    "exec/app-browser.js"
+  ],
+  "compilerOptions": {
+    "types": [
+      "@types/wicg-file-system-access"
+    ],
+    "lib": [
+      "ES2022",
+      "DOM",
+    ],
+
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    "strictNullChecks": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}
