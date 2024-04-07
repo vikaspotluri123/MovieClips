@@ -1,18 +1,19 @@
-/* global window, document, localStorage, fs, Materialize */
+// @ts-check
+
 class NoDirectoriesError extends Error {
 	constructor() {
 		super('No directories are available');
 	}
 }
 
-class File {
+class MovieClipsFile {
 	/**
 	 * @param {FileSystemFileHandle} handle
 	 */
 	static async read(handle) {
 		const file = await handle.getFile();
 		const string = `${file.name} (${file.size})`
-		return new File(string);
+		return new MovieClipsFile(string);
 	}
 
 	constructor(string) {
@@ -46,7 +47,7 @@ class Directory {
 			if (node.kind === 'directory') {
 				promises.push(setProperty(tree, node.name, Directory.read(node)));
 			} else {
-				promises.push(setProperty(tree, node.name, File.read(node)));
+				promises.push(setProperty(tree, node.name, MovieClipsFile.read(node)));
 			}
 		}
 
@@ -59,16 +60,10 @@ class Directory {
 	}
 }
 
-window.storage = window.storage || {
-	get(item) {
-		return localStorage.getItem(item);
-	},
-	set(item, value) {
-		return localStorage.setItem(item, value);
-	}
-};
-
-window.movieClips ??= {
+const MovieClips = {
+	/** @returns {HTMLVideoElement} */
+	// @ts-expect-error
+	mediaElement: () => document.getElementById('main'),
 	vids: [], // The array of scanned videos
 	isLoading: false, // Loading screen is showing
 	shorty: true, // Stop after {range} seconds or play to end
@@ -95,7 +90,7 @@ window.movieClips ??= {
 				file = `${folder}/${file}`;
 				const stat = fs.stat(file);
 				if (stat && stat.isDirectory()) {
-					results = results.concat(window.movieClips.util.allFiles(file));
+					results = results.concat(movieClips.util.allFiles(file));
 				} else {
 					results.push(file);
 				}
@@ -104,11 +99,10 @@ window.movieClips ??= {
 		},
 		/**
 		 * @description: Sets the visibility of the loading screens
-		 * @param {Boolean} to: Should the loading be enabled
-		 * @returns {null}
+		 * @param {boolean} to: Should the loading be enabled
 		 */
 		setLoading(to) {
-			window.movieClips.isLoading = Boolean(to);
+			movieClips.isLoading = Boolean(to);
 			if (to) {
 				document.querySelector('body').classList.add('loading');
 			} else {
@@ -117,64 +111,61 @@ window.movieClips ??= {
 		},
 		/**
 		 * @description: Sets the status text in the loading screen
-		 * @param {String} to: Status text to set
-		 * @returns {null}
+		 * @param {string} to: Status text to set
 		 */
 		setStatus(to) {
 			document.querySelector('#status').textContent = to;
 		},
 		/**
 		 * @description: Sets the title element (above the video) to specified text
-		 * @param {String} to: Title to set
-		 * @returns {null}
+		 * @param {string} title: Title to set
 		 */
 		setTitle(title) {
 			document.querySelector('#title').textContent = title;
 		},
 		/**
 		 * @description: Loads the specified movie into the player and adds start / stop settings
-		 * @param {Integer} index: Index position of filename in ${vids}
+		 * @param {number} index Index position of filename in ${vids}
 		 */
 		setMovie(index) {
 			// Filename
-			const movie = window.movieClips.vids[index];
+			const movie = movieClips.vids[index];
 			if (!movie) {
-				window.movieClips.util.setStatus('No movies found');
+				movieClips.util.setStatus('No movies found');
 				return false;
 			}
 
 			// Check if the movie is supported based on the file extension (weed out the bad ones early)
 			let ext = movie.split('.');
 			ext = ext[ext.length - 1];
-			if (!window.movieClips.supported.includes(ext)) {
+			if (!movieClips.supported.includes(ext)) {
 				console.warn('[rejection]', movie);
-				window.movieClips.vids.splice(index, 1); // Remove because it's not needed
+				movieClips.vids.splice(index, 1); // Remove because it's not needed
 				index--;
-				window.movieClips.handlers.next(null);
+				movieClips.handlers.next(null);
 				return true;
 			}
 
 			console.log(movie);
 			// Load the movie
-			document.querySelector('#main').setAttribute('src', movie);
+			movieClips.mediaElement().setAttribute('src', movie);
 			// Update the movie title area
 			let title = movie.split('/');
 			title = title[title.length - 1].split('.');
 			title = title[title.length - 2];
-			window.movieClips.util.setTitle(title);
+			movieClips.util.setTitle(title);
 			// Actually load the movie
-			document.querySelector('#main').load();
+			movieClips.mediaElement().load();
 			return true;
 		},
 		/**
 		 * @description: Populates ${vids} with the files by scanning saved directories
-		 * @param {null}
-		 * @returns {Promise}, no parameters
+		 * @returns {Promise<void>}
 		 */
 		updateList() {
 			return new Promise(resolve => {
-				window.movieClips.util.setStatus('Reading Folders');
-				let dirs = window.storage.get('dirs');
+				movieClips.util.setStatus('Reading Folders');
+				let dirs = localStorage.getItem('dirs');
 				if (!dirs) {
 					throw new NoDirectoriesError();
 					return resolve();
@@ -182,42 +173,40 @@ window.movieClips ??= {
 
 				dirs = JSON.parse(dirs);
 				dirs.forEach(dir => {
-					window.movieClips.util.setStatus(`Reading Folder ${dir}`);
-					const files = window.movieClips.util.allFiles(dir);
-					window.movieClips.vids = window.movieClips.vids.concat(files);
+					movieClips.util.setStatus(`Reading Folder ${dir}`);
+					const files = movieClips.util.allFiles(dir);
+					movieClips.vids = movieClips.vids.concat(files);
 				});
-				window.movieClips.util.setStatus('Removing Duplicates');
-				window.movieClips.vids = unique(window.movieClips.vids);
-				window.movieClips.util.setStatus('Randomizing');
-				shuffle(window.movieClips.vids); // See mutates input. See Secure-shuffle documentation
-				window.movieClips.util.setStatus('Removing unplaybale tracks');
-				window.movieClips.vids = window.movieClips.vids.map(video => {
+				movieClips.util.setStatus('Removing Duplicates');
+				movieClips.vids = unique(movieClips.vids);
+				movieClips.util.setStatus('Randomizing');
+				shuffle(movieClips.vids); // See mutates input. See Secure-shuffle documentation
+				movieClips.util.setStatus('Removing unplayable tracks');
+				movieClips.vids = movieClips.vids.map(video => {
 					let ext = video.split('.');
 					ext = ext[ext.length - 1];
-					return (window.movieClips.supported.includes(ext)) ? video : null;
+					return (movieClips.supported.includes(ext)) ? video : null;
 				}).filter(Boolean);
 				resolve();
 			});
 		},
 		/**
 		 * @description: sets timers to stop after shorty duration
-		 * @param {null}
-		 * @returns {null}
 		 */
 		videoStop() {
-			if (window.movieClips.shorty) {
+			if (movieClips.shorty) {
 				let stopAfter;
-				if (window.movieClips.shortyTime.set > 0) {
-					stopAfter = window.movieClips.shortyTime.set;
+				if (movieClips.shortyTime.set > 0) {
+					stopAfter = movieClips.shortyTime.set;
 				} else {
-					const diff = window.movieClips.range.max - window.movieClips.range.min + 1;
-					stopAfter = 1000 * parseFloat((Math.random() * diff) + window.movieClips.range.min).toFixed(3);
+					const diff = movieClips.range.max - movieClips.range.min + 1;
+					stopAfter = 1000 * parseFloat(((Math.random() * diff) + movieClips.range.min).toFixed(3));
 				}
 
 				console.log(`Next video after ${stopAfter / 1000} seconds`);
-				window.movieClips.shortyTimer = setTimeout(window.movieClips.handlers.next, stopAfter);
-				window.movieClips.shortyTime.set = stopAfter;
-				window.movieClips.shortyTime.at = Date.now();
+				movieClips.shortyTimer = setTimeout(movieClips.handlers.next, stopAfter);
+				movieClips.shortyTime.set = stopAfter;
+				movieClips.shortyTime.at = Date.now();
 			} else {
 				console.warn('videoStop was called but shorty is false');
 			}
@@ -227,155 +216,150 @@ window.movieClips ??= {
 	 * @description: functions for manipulating the video
 	 */
 	mediaActions: {
-		/**
-		 * @returns {Promise<void>} the promise returned by calling play
-		 */
 		play() {
-			return document.querySelector('#main').play();
+			return movieClips.mediaElement().play();
 		},
-		/**
-		 * @returns {Promise<void>}
-		 */
 		pause() {
-			document.querySelector('#main').pause(); // Returns undefined
+			movieClips.mediaElement().pause();
 		},
 		/**
 		 * @description: increase the speed of the video
-		 * @param {Number} [0.1] increment: How much to increase the current speed by
-		 * @returns {Number} The new playback rate
+		 * @param {number} [increment] How much to increase the current speed by
+		 * @returns {number} The new playback rate
 		 */
-		increaseSpeed(increment) {
-			const current = document.querySelector('#main').playbackRate;
+		increaseSpeed(increment = 0.1) {
+			const current = movieClips.mediaElement().playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
-			let final = current + (increment || 0.1); // Default increment 0.1x
+			let final = current + increment; // Default increment 0.1x
 			final = (final > max) ? max : final;
 			final = (final < min) ? min : final;
-			document.querySelector('#main').playbackRate = final;
+			movieClips.mediaElement().playbackRate = final;
 			return final;
 		},
 		/**
 		 * @description: increase the speed of the video
-		 * @param {Number} [0.1] decrement: How much to decrease the current speed by
-		 * @returns {Number} The new playback rate
+		 * @param {number} [decrement] How much to decrease the current speed by
+		 * @returns {number} The new playback rate
 		 */
-		decreaseSpeed(decrement) {
-			const current = document.querySelector('#main').playbackRate;
+		decreaseSpeed(decrement = 0.1) {
+			const current = movieClips.mediaElement().playbackRate;
 			const min = 0.5; // Audio stops working below 0.5x
 			const max = 4; // Audio stops working past 4x
-			let final = current - (decrement || 0.1); // Default decrement 0.1x
+			let final = current - decrement; // Default decrement 0.1x
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			document.querySelector('#main').playbackRate = final;
+			movieClips.mediaElement().playbackRate = final;
 			return final;
 		},
 		/**
 		 * @description: Forwards the video
-		 * @param {Number} [0.5] seconds: How much to increase the current time by
-		 * @returns {Number} The new time
+		 * @param {number} [seconds] How much to increase the current time by
+		 * @returns {number} The new time
 		 */
-		scrollForward(seconds) {
-			const current = document.querySelector('#main').currentTime;
+		scrollForward(seconds = 5) {
+			const current = movieClips.mediaElement().currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
-			let final = current + (seconds || 5); // Default increment 5 seconds
+			const max = movieClips.mediaElement().duration - 0.5; // Half a second event buffer
+			let final = current + seconds; // Default increment 5 seconds
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			document.querySelector('#main').currentTime = final;
+			movieClips.mediaElement().currentTime = final;
 			return final;
 		},
 		/**
 		 * @description: Rewinds the video
-		 * @param {Number} [0.5] seconds: How much to decrease the current time by
-		 * @returns {Number} The new time
+[		 * @param {number} [seconds] How much to decrease the current time by
+]		 * @returns {number} The new time
 		 */
-		scrollBackward(seconds) {
-			const current = document.querySelector('#main').currentTime;
+		scrollBackward(seconds = 5) {
+			const current = movieClips.mediaElement().currentTime;
 			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
-			let final = current - (seconds || 5); // Default increment 5 seconds
+			const max = movieClips.mediaElement().duration - 0.5; // Half a second event buffer
+			let final = current - seconds; // Default increment 5 seconds
 			final = (final < min) ? min : final;
 			final = (final > max) ? max : final;
-			document.querySelector('#main').currentTime = final;
+			movieClips.mediaElement().currentTime = final;
 			return final;
 		},
 		/**
 		 * @description: Increase the video volume
-		 * @param {Number} [0.05] percent(as decimal): What percent to increase the volume
-		 * @returns {Number} The new volume level
+		 * @param {number} [percent] (decimal) What percent to increase the volume
+		 * @returns {number} The new volume level
 		 */
-		increaseVolume(percent) {
-			const current = document.querySelector('#main').volume;
+		increaseVolume(percent = 0.05) { // Default increment of 5%
+			const current = movieClips.mediaElement().volume;
 			const min = 0;
 			const max = 1;
-			let final = current + (percent || 0.05); // Default increment of 5%
+			let final = current + percent;
 			final = final < min ? min : final;
 			final = final > max ? max : final;
-			document.querySelector('#main').volume = final;
+			movieClips.mediaElement().volume = final;
 			return final;
 		},
 		/**
 		 * @description: Decrease the video volume
-		 * @param {Number} [0.05] percent(as decimal): What percent to decrease the volume
-		 * @returns {Number} The new volume level
+		 * @param {number} [percent] (decimal) What percent to decrease the volume
+		 * @returns {number} The new volume level
 		 */
-		decreaseVolume(percent) {
-			const current = document.querySelector('#main').volume;
+		decreaseVolume(percent = 0.05) { // Default decrement of 5%
+			const current = movieClips.mediaElement().volume;
 			const min = 0;
 			const max = 1;
-			let final = current - (percent || 0.05); // Default decrement of 5%
+			let final = current - percent;
 			final = final < min ? min : final;
 			final = final > max ? max : final;
-			document.querySelector('#main').volume = final;
+			movieClips.mediaElement().volume = final;
 			return final;
 		},
 		/**
 		 * @description: Sets the video time
-		 * @param {Number} [0.1] seconds: Position to set video at
-		 * @returns {Number} The new time (should = ${seconds})
+		 * @param {number} [seconds] Position to set video at
+		 * @returns {number} The new time (should = ${seconds})
 		 */
-		moveTo(seconds) {
+		moveTo(seconds = 0.1) {
 			const min = 0.1; // Start a little after the beginning of the video
-			const max = document.querySelector('#main').duration - 0.5; // Half a second event buffer
+			const max = movieClips.mediaElement().duration - 0.5; // Half a second event buffer
 			seconds = ((seconds || min) > max) ? max : seconds;
 			seconds = (seconds < min) ? min : seconds;
-			document.querySelector('#main').currentTime = seconds;
+			movieClips.mediaElement().currentTime = seconds;
+			return seconds;
 		},
 		/**
 		 * @description: Sets the volume
-		 * @param {Number} [1] percent (as decimal): the volume percentage to set
-		 * @returns {Number} The new volume (should = ${level})
+		 * @param {number} [level] percent (as decimal): the volume percentage to set
+		 * @returns {number} The new volume (should = ${level})
 		 */
-		setVolume(level) {
-			level = parseFloat((level || 1)).toFixed(2);
+		setVolume(level = 1) {
+			level = parseFloat(level.toFixed(2));
 			level = level < 0 ? 0 : level;
 			level = level > 1 ? 1 : level;
-			document.querySelector('#main').volume = level;
+			movieClips.mediaElement().volume = level;
 			return level;
 		},
 		/**
 		 * @description: Mutes the video
 		 */
 		mute() {
-			document.querySelector('#main').muted = true;
+			movieClips.mediaElement().muted = true;
 		},
 		/**
 		 * @description: Unmutes the video
 		 */
 		unMute() {
-			document.querySelector('#main').muted = false;
+			movieClips.mediaElement().muted = false;
 		},
 		/**
 		 * @description: Switches between mute states
 		 */
 		toggleMute() {
-			document.querySelector('#main').muted = !(document.querySelector('#main').muted);
+			movieClips.mediaElement().muted = !(movieClips.mediaElement().muted);
 		},
 		/**
 		 * @description: Switches between play states
 		 */
 		togglePlaying() {
-			return (document.querySelector('#main').paused ? window.movieClips.mediaActions.play() : window.movieClips.mediaActions.pause());
+			return (movieClips.mediaElement().paused ? movieClips.mediaActions.play() : movieClips.mediaActions.pause());
 		}
 	},
 	handlers: {
@@ -400,15 +384,15 @@ window.movieClips ??= {
 			// @todo add full video support
 			const len = this.duration;
 			let start = Math.floor((Math.random() * (len - 0.5 + 1)) + 0.5);
-			if ((len - start) < window.movieClips.range.upper) {
-				start = len - window.movieClips.range.upper;
+			if ((len - start) < movieClips.range.upper) {
+				start = len - movieClips.range.upper;
 			}
 
 			this.currentTime = start;
 		},
 		/**
 		 * @description: Moves to the next video [when the current video is over or times out (shorty)]
-		 * @param {Event} {event} The `Event` object that was fired. If called directly, no object will be present
+		 * @param {Event} [event] The `Event` object that was fired. If called directly, no object will be present
 		 */
 		next(event) {
 			if (event) {
@@ -416,27 +400,27 @@ window.movieClips ??= {
 			}
 
 			// Reset shorty stuff
-			window.movieClips.shortyTime.set = -1;
-			clearTimeout(window.movieClips.shortyTimer);
+			movieClips.shortyTime.set = -1;
+			clearTimeout(movieClips.shortyTimer);
 
-			window.movieClips.index++;
+			movieClips.index++;
 
 			// Check if at end of array
-			if (window.movieClips.index >= window.movieClips.vids.length - 1) {
-				window.movieClips.index = 0;
-				window.movieClips.vids = [];
-				window.movieClips.util.setLoading(true);
+			if (movieClips.index >= movieClips.vids.length - 1) {
+				movieClips.index = 0;
+				movieClips.vids = [];
+				movieClips.util.setLoading(true);
 				console.info('initializing');
-				window.movieClips.util.updateList().then(() => {
-					window.movieClips.util.setStatus('Starting Up');
-					window.movieClips.util.setMovie(0);
-					window.movieClips.util.setStatus('Done... Goodbye');
-					window.movieClips.util.setLoading(false);
+				movieClips.util.updateList().then(() => {
+					movieClips.util.setStatus('Starting Up');
+					movieClips.util.setMovie(0);
+					movieClips.util.setStatus('Done... Goodbye');
+					movieClips.util.setLoading(false);
 				});
 				document.querySelector('#back').classList.add('disabled');
 			} else {
 				document.querySelector('#back').classList.remove('disabled');
-				window.movieClips.util.setMovie(window.movieClips.index);
+				movieClips.util.setMovie(movieClips.index);
 			}
 		},
 		/**
@@ -445,65 +429,65 @@ window.movieClips ??= {
 		 */
 		previous(event) {
 			// Make sure it's possible to go back
-			if (window.movieClips.index > 0) {
+			if (movieClips.index > 0) {
 				event.preventDefault();
-				window.movieClips.index--;
-				window.movieClips.util.setMovie(window.movieClips.index);
+				movieClips.index--;
+				movieClips.util.setMovie(movieClips.index);
 			} else {
 				document.querySelector('#back').classList.add('disabled');
 			}
 		},
 		/**
 		 * @description: Controls the state of shorty (next clip after ${range})
-		 * @param {Event} [event] The `Event` object that was fired. If called directly, no object will be present
+		 * @param {Event} [_] The `Event` object that was fired. If called directly, no object will be present
 		 */
 		playPause(_) {
 			const current = this.textContent;
 			if (current === 'pause') {
-				window.movieClips.shorty = false;
-				clearTimeout(window.movieClips.shortyTimer);
+				movieClips.shorty = false;
+				clearTimeout(movieClips.shortyTimer);
 				console.log('timeout cleared');
-				window.movieClips.shortyTime.set = -1;
+				movieClips.shortyTime.set = -1;
 				this.textContent = 'play_arrow';
 				Materialize.toast('Snippets Disabled', 2000);
 			} else {
-				window.movieClips.shorty = true;
-				window.movieClips.util.videoStop();
+				movieClips.shorty = true;
+				movieClips.util.videoStop();
 				this.textContent = 'pause';
 				Materialize.toast('Snippets Enabled', 2000);
 			}
 		},
 		/**
 		 * @description: Handles keypress events for keyboard shortcuts
-		 * @param {Event} [event] The `Event` object that was fired. Should not be called directly
+		 * @param {KeyboardEvent} event The `Event` object that was fired. Should not be called directly
 		 */
 		keypress(event) {
 			switch (event.keyCode) {
 				case 32: // @key {space}
 				case 107: // @key {k}
 				case 112: // @key {p}
-					window.movieClips.mediaActions.togglePlaying();
+					movieClips.mediaActions.togglePlaying();
 					break;
 				case 102: // @key {f}
-					window.movieClips.handlers.fullscreen();
+					movieClips.handlers.fullscreen();
 					break;
 				case 100: // @key {d}
-					window.movieClips.mediaActions.increaseSpeed();
+					movieClips.mediaActions.increaseSpeed();
 					break;
 				case 106: // @key {j}
-					window.movieClips.mediaActions.scrollBackward(10);
+					movieClips.mediaActions.scrollBackward(10);
 					break;
 				case 108: // @key {l}
-					window.movieClips.mediaActions.scrollForward(10);
+					movieClips.mediaActions.scrollForward(10);
 					break;
 				case 109: // @key {m}
-					window.movieClips.mediaActions.toggleMute();
+					movieClips.mediaActions.toggleMute();
 					break;
 				case 110:
-					window.movieClips.handlers.next();
+					movieClips.handlers.next();
 					break;
 				case 115: // @key {s}
-					window.movieClips.mediaActions.decreaseSpeed();
+					movieClips.mediaActions.decreaseSpeed();
 					break;
 				default:
 					console.log('Keypress not found', event.keyCode, event.which);
@@ -512,30 +496,30 @@ window.movieClips ??= {
 		},
 		/**
 		 * @description: Handles keydown events for special keys for keyboard shortcuts. These keys don't trigger keypressed
-		 * @param {Event} [event] The `Event` object that was fired. Should not be called directly.
+		 * @param {KeyboardEvent} [event] The `Event` object that was fired. Should not be called directly.
 		 */
 		keydown(event) {
 			switch (event.keyCode) {
 				case 27: // @key {escape}
-					window.movieClips.handlers.fullscreen();
+					movieClips.handlers.fullscreen();
 					break;
 				case 35: // @key {end}
-					window.movieClips.handlers.next();
+					movieClips.handlers.next();
 					break;
 				case 36: // @key {home}
-					window.movieClips.mediaActions.moveTo(0);
+					movieClips.mediaActions.moveTo(0);
 					break;
 				case 37: // @key {left-arrow}
-					window.movieClips.mediaActions.scrollBackward(5);
+					movieClips.mediaActions.scrollBackward(5);
 					break;
 				case 38: // @key {up-arrow}
-					window.movieClips.mediaActions.increaseVolume(0.05);
+					movieClips.mediaActions.increaseVolume(0.05);
 					break;
 				case 39: // @key {right-arrow}
-					window.movieClips.mediaActions.scrollForward(5);
+					movieClips.mediaActions.scrollForward(5);
 					break;
 				case 40: // @key {down-arrow}
-					window.movieClips.mediaActions.decreaseVolume(0.05);
+					movieClips.mediaActions.decreaseVolume(0.05);
 					break;
 				default:
 					console.log('Keydown not found', event.keyCode, event.which);
@@ -547,17 +531,17 @@ window.movieClips ??= {
 		 * @param {Event} [_] The `Event` object that was fired. Should not be called directly.
 		 */
 		play(_) {
-			document.querySelector('#main').removeEventListener('ended', window.movieClips.handlers.next);
-			if (window.movieClips.shorty) {
-				window.movieClips.util.videoStop();
+			movieClips.mediaElement().removeEventListener('ended', movieClips.handlers.next);
+			if (movieClips.shorty) {
+				movieClips.util.videoStop();
 			} else {
-				document.querySelector('#main').addEventListener('ended', window.movieClips.handlers.next);
+				movieClips.mediaElement().addEventListener('ended', movieClips.handlers.next);
 			}
 		},
 		pause(_) {
-			clearTimeout(window.movieClips.shortyTimer);
+			clearTimeout(movieClips.shortyTimer);
 			console.log('timeout cleared');
-			window.movieClips.shortyTime.set = Date.now() - window.movieClips.shortyTime.at;
+			movieClips.shortyTime.set = Date.now() - movieClips.shortyTime.at;
 		},
 		/**
 		 * @description: Updates the UI when video speed is changed
@@ -568,36 +552,44 @@ window.movieClips ??= {
 		}
 	},
 	initialize() {
-		window.movieClips.util.setLoading(1);
-		document.querySelector('#directory-selector').addEventListener('click', window.movieClips.handlers.directory);
+		movieClips.util.setLoading(true);
+		document.querySelector('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 		// We have to wait for the list to update
-		window.movieClips.util.updateList().then(() => {
-			window.movieClips.util.setStatus('Making buttons clickable');
-			document.querySelector('#back').addEventListener('click', window.movieClips.handlers.previous);
-			document.querySelector('#next').addEventListener('click', window.movieClips.handlers.next);
-			document.querySelector('#main').addEventListener('click', window.movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
-			document.querySelector('#main').addEventListener('dblclick', window.movieClips.handlers.fullscreen);
-			window.movieClips.util.setStatus('Adding keyboard shortcuts');
-			document.querySelector('#playPause').addEventListener('click', window.movieClips.handlers.playPause);
-			document.addEventListener('keypress', window.movieClips.handlers.keypress);
-			document.addEventListener('keydown', window.movieClips.handlers.keydown);
-			window.movieClips.util.setStatus('Loading video helpers');
-			document.querySelector('#main').addEventListener('ratechange', window.movieClips.handlers.ratechange);
-			document.querySelector('#main').addEventListener('play', window.movieClips.handlers.play);
-			document.querySelector('#main').addEventListener('pause', window.movieClips.handlers.pause);
-			document.querySelector('#main').addEventListener('loadedmetadata', window.movieClips.handlers.metadata);
-			document.querySelector('#main').onerror = window.movieClips.handlers.next;
-			window.movieClips.util.setStatus('Starting Up');
-			if (window.movieClips.util.setMovie(0)) {
-				window.movieClips.util.setStatus('Done... Goodbye');
-				window.movieClips.util.setLoading(false);
+		movieClips.util.updateList().then(() => {
+			movieClips.util.setStatus('Making buttons clickable');
+			document.querySelector('#back').addEventListener('click', movieClips.handlers.previous);
+			document.querySelector('#next').addEventListener('click', movieClips.handlers.next);
+			movieClips.mediaElement().addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
+			movieClips.mediaElement().addEventListener('dblclick', movieClips.handlers.fullscreen);
+			movieClips.util.setStatus('Adding keyboard shortcuts');
+			document.querySelector('#playPause').addEventListener('click', movieClips.handlers.playPause);
+			document.addEventListener('keypress', movieClips.handlers.keypress);
+			document.addEventListener('keydown', movieClips.handlers.keydown);
+			movieClips.util.setStatus('Loading video helpers');
+			movieClips.mediaElement().addEventListener('ratechange', movieClips.handlers.ratechange);
+			movieClips.mediaElement().addEventListener('play', movieClips.handlers.play);
+			movieClips.mediaElement().addEventListener('pause', movieClips.handlers.pause);
+			movieClips.mediaElement().addEventListener('loadedmetadata', movieClips.handlers.metadata);
+			movieClips.mediaElement().onerror = movieClips.handlers.next;
+			movieClips.util.setStatus('Starting Up');
+			if (movieClips.util.setMovie(0)) {
+				movieClips.util.setStatus('Done... Goodbye');
+				movieClips.util.setLoading(false);
 			}
 		}).catch(error => {
 			if (error instanceof NoDirectoriesError) {
-				window.movieClips.util.setLoading(false);
+				movieClips.util.setLoading(false);
 				document.querySelector('#selector').removeAttribute('hidden')
-				document.querySelector('#player').setAttribute('hidden', true)
+				document.querySelector('#player').setAttribute('hidden', 'true')
 			}
 		});
 	}
 };
+
+// @ts-expect-error
+window.movieClips ??= MovieClips;
+/**
+ * @type {typeof MovieClips}
+ */
+// @ts-expect-error
+const movieClips = window.movieClips;
