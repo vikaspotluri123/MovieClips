@@ -4,6 +4,7 @@ import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
+import * as video from '../src/components/video.ts';
 
 /**
  * @typedef {import('../src/browser-files.js').FileNode} FileNode
@@ -184,164 +185,6 @@ const MovieClips = {
 			}
 		}
 	},
-	/**
-	 * @description: functions for manipulating the video
-	 */
-	mediaActions: {
-		play() {
-			return movieClips.elements.read('#main').play();
-		},
-		pause() {
-			movieClips.elements.read('#main').pause();
-		},
-		/**
-		 * @description: increase the speed of the video
-		 * @param {number} [increment] How much to increase the current speed by
-		 * @returns {number} The new playback rate
-		 */
-		increaseSpeed(increment = 0.1) {
-			const video = movieClips.elements.read('#main');
-			const current = video.playbackRate;
-			const min = 0.5; // Audio stops working below 0.5x
-			const max = 4; // Audio stops working past 4x
-			let final = current + increment; // Default increment 0.1x
-			final = (final > max) ? max : final;
-			final = (final < min) ? min : final;
-			video.playbackRate = final;
-			return final;
-		},
-		/**
-		 * @description: increase the speed of the video
-		 * @param {number} [decrement] How much to decrease the current speed by
-		 * @returns {number} The new playback rate
-		 */
-		decreaseSpeed(decrement = 0.1) {
-			const video = movieClips.elements.read('#main');
-			const current = video.playbackRate;
-			const min = 0.5; // Audio stops working below 0.5x
-			const max = 4; // Audio stops working past 4x
-			let final = current - decrement; // Default decrement 0.1x
-			final = (final < min) ? min : final;
-			final = (final > max) ? max : final;
-			video.playbackRate = final;
-			return final;
-		},
-		/**
-		 * @description: Forwards the video
-		 * @param {number} [seconds] How much to increase the current time by
-		 * @returns {number} The new time
-		 */
-		scrollForward(seconds = 5) {
-			const video = movieClips.elements.read('#main');
-			const current = video.currentTime;
-			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = video.duration - 0.5; // Half a second event buffer
-			let final = current + seconds; // Default increment 5 seconds
-			final = (final < min) ? min : final;
-			final = (final > max) ? max : final;
-			video.currentTime = final;
-			return final;
-		},
-		/**
-		 * @description: Rewinds the video
-		 * @param {number} [seconds] How much to decrease the current time by
-		 * @returns {number} The new time
-		 */
-		scrollBackward(seconds = 5) {
-			const video = movieClips.elements.read('#main');
-			const current = video.currentTime;
-			const min = 0.5; // Anything less than half a second isn't really noticeable
-			const max = video.duration - 0.5; // Half a second event buffer
-			let final = current - seconds; // Default increment 5 seconds
-			final = (final < min) ? min : final;
-			final = (final > max) ? max : final;
-			video.currentTime = final;
-			return final;
-		},
-		/**
-		 * @description: Increase the video volume
-		 * @param {number} [percent] (decimal) What percent to increase the volume
-		 * @returns {number} The new volume level
-		 */
-		increaseVolume(percent = 0.05) { // Default increment of 5%
-			const video = movieClips.elements.read('#main');
-			const current = video.volume;
-			const min = 0;
-			const max = 1;
-			let final = current + percent;
-			final = final < min ? min : final;
-			final = final > max ? max : final;
-			video.volume = final;
-			return final;
-		},
-		/**
-		 * @description: Decrease the video volume
-		 * @param {number} [percent] (decimal) What percent to decrease the volume
-		 * @returns {number} The new volume level
-		 */
-		decreaseVolume(percent = 0.05) { // Default decrement of 5%
-			const video = movieClips.elements.read('#main');
-			const current = video.volume;
-			const min = 0;
-			const max = 1;
-			let final = current - percent;
-			final = final < min ? min : final;
-			final = final > max ? max : final;
-			video.volume = final;
-			return final;
-		},
-		/**
-		 * @description: Sets the video time
-		 * @param {number} [seconds] Position to set video at
-		 * @returns {number} The new time (should = ${seconds})
-		 */
-		moveTo(seconds = 0.1) {
-			const video = movieClips.elements.read('#main');
-			const min = 0.1; // Start a little after the beginning of the video
-			const max = video.duration - 0.5; // Half a second event buffer
-			seconds = ((seconds || min) > max) ? max : seconds;
-			seconds = (seconds < min) ? min : seconds;
-			video.currentTime = seconds;
-			return seconds;
-		},
-		/**
-		 * @description: Sets the volume
-		 * @param {number} [level] percent (as decimal): the volume percentage to set
-		 * @returns {number} The new volume (should = ${level})
-		 */
-		setVolume(level = 1) {
-			level = parseFloat(level.toFixed(2));
-			level = level < 0 ? 0 : level;
-			level = level > 1 ? 1 : level;
-			movieClips.elements.read('#main').volume = level;
-			return level;
-		},
-		/**
-		 * @description: Mutes the video
-		 */
-		mute() {
-			movieClips.elements.read('#main').muted = true;
-		},
-		/**
-		 * @description: Unmutes the video
-		 */
-		unMute() {
-			movieClips.elements.read('#main').muted = false;
-		},
-		/**
-		 * @description: Switches between mute states
-		 */
-		toggleMute() {
-			const video = movieClips.elements.read('#main');
-			video.muted = !(video.muted);
-		},
-		/**
-		 * @description: Switches between play states
-		 */
-		togglePlaying() {
-			return (movieClips.elements.read('#main').paused ? movieClips.mediaActions.play() : movieClips.mediaActions.pause());
-		}
-	},
 	handlers: {
 		async directory() {
 			const handle = await window.showDirectoryPicker({mode: 'read'});
@@ -380,28 +223,28 @@ const MovieClips = {
 				case 32: // @key {space}
 				case 107: // @key {k}
 				case 112: // @key {p}
-					movieClips.mediaActions.togglePlaying();
+					video.actions.togglePlaying();
 					break;
 				case 102: // @key {f}
 					movieClips.handlers.fullscreen();
 					break;
 				case 100: // @key {d}
-					movieClips.mediaActions.increaseSpeed();
+					video.actions.increaseSpeed();
 					break;
 				case 106: // @key {j}
-					movieClips.mediaActions.scrollBackward(10);
+					video.actions.scrollBackward(10);
 					break;
 				case 108: // @key {l}
-					movieClips.mediaActions.scrollForward(10);
+					video.actions.scrollForward(10);
 					break;
 				case 109: // @key {m}
-					movieClips.mediaActions.toggleMute();
+					video.actions.toggleMute();
 					break;
 				case 110:
 					mediaControls.eventHandlers.next();
 					break;
 				case 115: // @key {s}
-					movieClips.mediaActions.decreaseSpeed();
+					video.actions.decreaseSpeed();
 					break;
 				default:
 					console.log('Keypress not found', event.keyCode, event.which);
@@ -421,19 +264,19 @@ const MovieClips = {
 					mediaControls.eventHandlers.next();
 					break;
 				case 36: // @key {home}
-					movieClips.mediaActions.moveTo(0);
+					video.actions.moveTo(0);
 					break;
 				case 37: // @key {left-arrow}
-					movieClips.mediaActions.scrollBackward(5);
+					video.actions.scrollBackward(5);
 					break;
 				case 38: // @key {up-arrow}
-					movieClips.mediaActions.increaseVolume(0.05);
+					video.actions.increaseVolume(0.05);
 					break;
 				case 39: // @key {right-arrow}
-					movieClips.mediaActions.scrollForward(5);
+					video.actions.scrollForward(5);
 					break;
 				case 40: // @key {down-arrow}
-					movieClips.mediaActions.decreaseVolume(0.05);
+					video.actions.decreaseVolume(0.05);
 					break;
 				default:
 					console.log('Keydown not found', event.keyCode, event.which);
@@ -477,22 +320,22 @@ const MovieClips = {
 		movieClips.elements.read('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 		// We have to wait for the list to update
 		movieClips.util.updateList().then(() => {
-			const video = movieClips.elements.read('#main');
+			const videoNode = movieClips.elements.read('#main');
 			movieClips.util.setStatus('Making buttons clickable');
 			movieClips.elements.read('#back').addEventListener('click', mediaControls.eventHandlers.previous);
 			movieClips.elements.read('#next').addEventListener('click', mediaControls.eventHandlers.next);
-			video.addEventListener('click', movieClips.mediaActions.togglePlaying); // We'll add a handler for this if needed in the future
-			video.addEventListener('dblclick', movieClips.handlers.fullscreen);
+			videoNode.addEventListener('click', video.actions.togglePlaying); // We'll add a handler for this if needed in the future
+			videoNode.addEventListener('dblclick', movieClips.handlers.fullscreen);
 			movieClips.util.setStatus('Adding keyboard shortcuts');
 			movieClips.elements.read('#playPause').addEventListener('click', mediaControls.eventHandlers.playPause);
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
 			movieClips.util.setStatus('Loading video helpers');
-			video.addEventListener('ratechange', movieClips.handlers.ratechange);
-			video.addEventListener('play', movieClips.handlers.play);
-			video.addEventListener('pause', movieClips.handlers.pause);
-			video.addEventListener('loadedmetadata', movieClips.handlers.metadata);
-			video.onerror = mediaControls.eventHandlers.next;
+			videoNode.addEventListener('ratechange', movieClips.handlers.ratechange);
+			videoNode.addEventListener('play', movieClips.handlers.play);
+			videoNode.addEventListener('pause', movieClips.handlers.pause);
+			videoNode.addEventListener('loadedmetadata', movieClips.handlers.metadata);
+			videoNode.onerror = mediaControls.eventHandlers.next;
 
 			initialized();
 

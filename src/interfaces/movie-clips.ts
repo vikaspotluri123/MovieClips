@@ -49,22 +49,6 @@ export interface MovieClips {
 		updateList: () => Promise<void>;
 		videoStop: () => void;
 	};
-	mediaActions: {
-		play: () => Promise<void>;
-		pause: () => void;
-		increaseSpeed: (increment?: number) => number;
-		decreaseSpeed: (decrement?: number) => number;
-		scrollForward: (seconds?: number) => number;
-		scrollBackward: (seconds?: number) => number;
-		increaseVolume: (percent?: number) => number;
-		decreaseVolume: (percent?: number) => number;
-		moveTo: (seconds?: number) => number;
-		setVolume: (level?: number) => number;
-		mute: () => void;
-		unMute: () => void;
-		toggleMute: () => void;
-		togglePlaying: () => Promise<void> | void;
-	};
 	handlers: {
 		directory: () => Promise<void>;
 		fullscreen: (event?: Event) => void;
