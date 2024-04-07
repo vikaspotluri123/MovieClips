@@ -1,4 +1,4 @@
-import {afterInitialization} from '../initialization.ts';
+import {eventBus} from '../event-bus.ts';
 import {Elements, MovieClips} from '../interfaces/movie-clips.ts';
 
 let movieClips: MovieClips;
@@ -105,7 +105,7 @@ export const actions = {
 	}
 };
 
-afterInitialization(() => {
+eventBus.once('hook:initialize', () => {
 	movieClips = (window as unknown as {movieClips: MovieClips}).movieClips;
 	videoNode = movieClips.elements['#main'];
 });

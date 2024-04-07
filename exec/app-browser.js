@@ -1,7 +1,7 @@
 // @ts-check
-import {initialized} from '../src/initialization.ts';
 import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
+import {eventBus} from '../src/event-bus.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
 import * as video from '../src/components/video.ts';
@@ -337,7 +337,7 @@ const MovieClips = {
 			videoNode.addEventListener('loadedmetadata', movieClips.handlers.metadata);
 			videoNode.onerror = mediaControls.eventHandlers.next;
 
-			initialized();
+			eventBus.dispatch('hook:initialize');
 
 			movieClips.util.setStatus('Starting Up');
 			if (movieClips.util.setMovie(0)) {

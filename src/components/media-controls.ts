@@ -1,4 +1,4 @@
-import {afterInitialization} from '../initialization.ts';
+import {eventBus} from '../event-bus.ts';
 import {Elements, MovieClips} from '../interfaces/movie-clips.ts';
 
 let movieClips: MovieClips;
@@ -75,7 +75,7 @@ export const eventHandlers = {
 	},
 }
 
-afterInitialization(() => {
+eventBus.once('hook:initialize', () => {
 	movieClips = (window as unknown as {movieClips: MovieClips}).movieClips;
 	shortyToggleNode = movieClips.elements.take('#playPause');
 	backNode = movieClips.elements.take('#back');
