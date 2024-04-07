@@ -1,5 +1,6 @@
 // @ts-check
 import {filterFlat, readDirectory} from '../src/browser-files.ts';
+import {MovieDb} from '../src/movie-db.ts';
 
 /**
  * @typedef {import('../src/browser-files.js').FileNode} FileNode
@@ -29,87 +30,6 @@ const unique = array => Array.from(new Set(array));
 class NoDirectoriesError extends Error {
 	constructor() {
 		super('No directories are available');
-	}
-}
-
-/**
- * @template T
- * @param {T extends Record<'onerror' | 'onsuccess' | 'result' | 'error', any> ? T : never} request
- * @returns {Promise<Awaited<T['result']>>}
- */
-function promisifyRequest(request) {
-	return new Promise((resolve, reject) => {
-		request.onsuccess = () => resolve(request.result);
-		request.onerror = () => reject(request.error);
-	});
-}
-
-class MovieDb {
-	/**
-	 * @param {string} dbName
-	 * @param {string} storeName
-	 */
-	constructor(dbName, storeName) {
-		this.dbName = dbName;
-		this.storeName = storeName;
-		this._db = this._initialize();
-	}
-
-	/**
-	 * @param {string} key
-	 * @returns {Promise<FileSystemDirectoryHandle>}
-	 */
-	async fetch(key) {
-		const db = await this._db;
-		const request = db.transaction([this.storeName], 'readonly')
-			.objectStore(this.storeName)
-			.get(key);
-
-		return promisifyRequest(request);
-	}
-
-	/**
-	 * @param {string} key
-	 * @param {FileSystemDirectoryHandle} value
-	 */
-	async store(key, value) {
-		const db = await this._db;
-		const request = db.transaction([this.storeName], 'readwrite')
-			.objectStore(this.storeName)
-			.put(value, key);
-
-		await promisifyRequest(request);
-	}
-
-	/**
-	 * @returns {Promise<string[]>}
-	 */
-	async getDirectories() {
-		const db = await this._db;
-		const request = db.transaction([this.storeName], 'readonly')
-			.objectStore(this.storeName)
-			.getAllKeys();
-
-		const keys = await promisifyRequest(request);
-		if (!keys.every(key => typeof key ==='string')) {
-			const invalidKeys = keys.filter(key => typeof key !== "string").join(', ');
-			throw new Error(`Key(s) have invalid type: ${invalidKeys}`);
-		}
-
-		// @ts-expect-error the next version of typescript will understand that `keys` is guaranteed to be a `string[]`
-		return keys;
-	}
-
-	/**
-	 * @private
-	 */
-	async _initialize() {
-		const request = window.indexedDB.open(this.dbName, 1);
-		request.onupgradeneeded = () => {
-			return request.result.createObjectStore(this.storeName);
-		};
-
-		return promisifyRequest(request);
 	}
 }
 
