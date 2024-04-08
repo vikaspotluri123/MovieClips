@@ -52,8 +52,6 @@ export interface MovieClips {
 		directory: () => Promise<void>;
 		fullscreen: (event?: Event) => void;
 		metadata: (event?: Event) => void;
-		keypress: (event: KeyboardEvent) => void;
-		keydown: (event: KeyboardEvent) => void;
 		play: (event?: Event) => void;
 		pause: (event?: any) => void;
 		ratechange: (event?: Event) => void;

@@ -4,6 +4,7 @@ import {MovieDb} from '../src/movie-db.ts';
 import {eventBus} from '../src/event-bus.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
 import * as video from '../src/components/video.ts';
+import {keybindings} from '../src/keybindings.ts';
 
 const videoEndHandler = eventBus.createRedirect('event:next', 'video_ended');
 
@@ -206,72 +207,6 @@ const MovieClips = {
 			this.currentTime = start;
 		},
 		/**
-		 * @description: Handles keypress events for keyboard shortcuts
-		 * @param {KeyboardEvent} event The `Event` object that was fired. Should not be called directly
-		 */
-		keypress(event) {
-			switch (event.keyCode) {
-				case 32: // @key {space}
-				case 107: // @key {k}
-				case 112: // @key {p}
-					video.actions.togglePlaying();
-					break;
-				case 102: // @key {f}
-					movieClips.handlers.fullscreen();
-					break;
-				case 100: // @key {d}
-					video.actions.increaseSpeed();
-					break;
-				case 106: // @key {j}
-					video.actions.scrollBackward(10);
-					break;
-				case 108: // @key {l}
-					video.actions.scrollForward(10);
-					break;
-				case 109: // @key {m}
-					video.actions.toggleMute();
-					break;
-				case 115: // @key {s}
-					video.actions.decreaseSpeed();
-					break;
-				default:
-					console.log('Keypress not found', event.keyCode, event.which);
-					break;
-			}
-		},
-		/**
-		 * @description: Handles keydown events for special keys for keyboard shortcuts. These keys don't trigger keypressed
-		 * @param {KeyboardEvent} event The `Event` object that was fired. Should not be called directly.
-		 */
-		keydown(event) {
-			switch (event.keyCode) {
-				case 27: // @key {escape}
-					movieClips.handlers.fullscreen();
-					break;
-				case 35: // @key {end}
-					eventBus.dispatch('event:next', 'key_end');
-					break;
-				case 36: // @key {home}
-					video.actions.moveTo(0);
-					break;
-				case 37: // @key {left-arrow}
-					video.actions.scrollBackward(5);
-					break;
-				case 38: // @key {up-arrow}
-					video.actions.increaseVolume(0.05);
-					break;
-				case 39: // @key {right-arrow}
-					video.actions.scrollForward(5);
-					break;
-				case 40: // @key {down-arrow}
-					video.actions.decreaseVolume(0.05);
-					break;
-				default:
-					console.log('Keydown not found', event.keyCode, event.which);
-					break;
-			}
-		},
-		/**
 		 * @description: Adds listeners for pause and adds timeouts
 		 * @param {Event} [_] The `Event` object that was fired. Should not be called directly.
 		 */
@@ -310,9 +245,15 @@ const MovieClips = {
 		movieClips.util.updateList().then(() => {
 			movieClips.util.setStatus('Performing final preparations');
 			eventBus.dispatch('hook:bind_events');
-			document.addEventListener('keypress', movieClips.handlers.keypress);
-			document.addEventListener('keydown', movieClips.handlers.keydown);
-
+			keybindings.registerAll({
+				// @key {escape}
+				'27': movieClips.handlers.fullscreen,
+				// @key {end}
+				'35': () => eventBus.dispatch('event:next', 'key_end'),
+				// @key {f}
+				'102': movieClips.handlers.fullscreen,
+			});
+			keybindings.bind(document);
 			movieClips.util.setStatus('Starting Up');
 			if (movieClips.util.setMovie(0)) {
 				movieClips.util.setStatus('Done... Goodbye');

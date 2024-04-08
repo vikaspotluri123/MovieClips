@@ -1,5 +1,6 @@
 import {eventBus} from '../event-bus.ts';
 import {Elements, MovieClips} from '../interfaces/movie-clips.ts';
+import {keybindings} from '../keybindings.ts';
 
 let movieClips: MovieClips;
 let videoNode: Elements['#main'];
@@ -74,7 +75,7 @@ export const actions = {
 		video.volume = final;
 		return final;
 	},
-	moveTo(seconds: number = 0.1): number {
+	moveTo(seconds = 0.1): number {
 		const video = videoNode;
 		const min = 0.1; // Start a little after the beginning of the video
 		const max = video.duration - 0.5; // Half a second event buffer
@@ -116,5 +117,34 @@ eventBus.once('hook:bind_events', () => {
 	videoNode.addEventListener('pause', movieClips.handlers.pause);
 	videoNode.addEventListener('loadedmetadata', movieClips.handlers.metadata);
 	videoNode.onerror = () => eventBus.dispatch('event:next', 'error');
+
+	keybindings.registerAll({
+		// @key {space}
+		'32': actions.togglePlaying,
+		// @key {k}
+		'107': actions.togglePlaying,
+		// @key {p}
+		'112': actions.togglePlaying,
+		// @key {d}
+		'100': actions.increaseSpeed,
+		// @key {j}
+		'106': () => actions.scrollBackward(10),
+		// @key {l}
+		'108': () => actions.scrollForward(10),
+		// @key {m}
+		'109': actions.toggleMute,
+		// @key {s}
+		'115': actions.decreaseSpeed,
+		// @key {home}
+		'36': () => actions.moveTo(0),
+		// @key {left-arrow}
+		'37': actions.scrollBackward,
+		// @key {up-arrow}
+		'38': actions.increaseVolume,
+		// @key {right-arrow}
+		'39': actions.scrollForward,
+		// @key {down-arrow}
+		'40': actions.decreaseVolume,
+	})
 });
 
