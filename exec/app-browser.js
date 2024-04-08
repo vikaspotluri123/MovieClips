@@ -1,4 +1,13 @@
 // @ts-check
+
+try {
+	Promise.all([
+		import('./jquery.js'),
+		import('./lib/hammer.js'),
+		import('./lib/material.js'),
+	]);
+} catch {}
+
 import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
 import {eventBus} from '../src/event-bus.ts';
