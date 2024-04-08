@@ -1,6 +1,5 @@
 export type EventMap = {
 	'hook:bind_events': void;
-	'hook:initialize': void;
 	'event:previous': 'previous_button';
 	'event:next': 'error' | 'key_end' | 'video_ended' | 'invalid_movie' | 'clip_timer' | 'next_button';
 }

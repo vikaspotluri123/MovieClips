@@ -318,15 +318,10 @@ const MovieClips = {
 		movieClips.elements.read('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 		// We have to wait for the list to update
 		movieClips.util.updateList().then(() => {
-			const videoNode = movieClips.elements.read('#main');
+			movieClips.util.setStatus('Performing final preparations');
 			eventBus.dispatch('hook:bind_events');
-			movieClips.util.setStatus('Making buttons clickable');
-			movieClips.util.setStatus('Adding keyboard shortcuts');
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
-			movieClips.util.setStatus('Loading video helpers');
-
-			eventBus.dispatch('hook:initialize');
 
 			movieClips.util.setStatus('Starting Up');
 			if (movieClips.util.setMovie(0)) {
