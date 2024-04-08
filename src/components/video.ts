@@ -115,4 +115,6 @@ eventBus.once('hook:bind_events', () => {
 	videoNode.addEventListener('play', movieClips.handlers.play);
 	videoNode.addEventListener('pause', movieClips.handlers.pause);
 	videoNode.addEventListener('loadedmetadata', movieClips.handlers.metadata);
+	videoNode.onerror = () => eventBus.dispatch('event:next', 'error');
 });
+

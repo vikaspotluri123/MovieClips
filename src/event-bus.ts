@@ -1,11 +1,13 @@
 export type EventMap = {
 	'hook:bind_events': void;
 	'hook:initialize': void;
+	'event:previous': 'previous_button';
+	'event:next': 'error' | 'key_end' | 'video_ended' | 'invalid_movie' | 'clip_timer' | 'next_button';
 }
 
 interface EventSpy {
 	events: Array<{timestamp: number, event: keyof EventMap}>;
-	track(event: keyof EventMap): void;
+	track(event: keyof EventMap | CustomEvent): void;
 }
 
 let eventSpy: EventSpy | undefined;
@@ -26,6 +28,25 @@ class EventBus extends EventTarget {
 		};
 
 		super.addEventListener(type, callback, options);
+	}
+
+	/**
+	 * Returns a proxy function that can be used to route events from other busses to this bus.
+	 * `event.preventDefault()` will be called on the source event before an event is dispatched
+	 */
+	createRedirect(...args: Parameters<EventBus['_dispatchEvent']>) {
+		return (event: Event) => {
+			event.preventDefault();
+			// @ts-expect-error it's not worth typing this
+			this._dispatchEvent(...args);
+		}
+	}
+
+	dispatchAfter(delay: number, ...args: Parameters<EventBus['_dispatchEvent']>) {
+		return setTimeout(() => {
+			// @ts-expect-error it's not worth typing this
+			this._dispatchEvent(...args);
+		}, delay);
 	}
 
 	override removeEventListener<
@@ -79,6 +100,7 @@ class EventBus extends EventTarget {
 	 */
 	// @ts-expect-error we're extending the class, not the interface
 	dispatchEvent(...args: Parameters<EventBus['_dispatchEvent']>) {
+		// @ts-expect-error it's not typing this
 		return this._dispatchEvent(...args);
 	}
 
@@ -92,9 +114,17 @@ if (true) {
 	eventSpy = {
 		events: [],
 		track(event) {
+			let eventAsString: string;
+			if (event instanceof CustomEvent) {
+				const detail: string = typeof event.detail === 'object' ? '(obj)' : event.detail;
+				eventAsString = `${event.type} (${detail})`;
+			} else {
+				eventAsString = event;
+			}
+
 			this.events.push({
 				timestamp: performance.now(),
-				event,
+				event: eventAsString,
 			});
 		},
 	};

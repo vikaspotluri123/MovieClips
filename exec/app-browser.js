@@ -6,6 +6,8 @@ import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
 import * as video from '../src/components/video.ts';
 
+const videoEndHandler = eventBus.createRedirect('event:next', 'video_ended');
+
 /**
  * @typedef {import('../src/browser-files.js').FileNode} FileNode
  */
@@ -118,7 +120,7 @@ const MovieClips = {
 				console.warn('[rejection]', movie);
 				movieClips.vids.splice(index, 1); // Remove because it's not needed
 				index--;
-				mediaControls.eventHandlers.next();
+				eventBus.dispatch('event:next', 'invalid_movie');
 				return true;
 			}
 
@@ -177,7 +179,7 @@ const MovieClips = {
 				}
 
 				console.log(`Next video after ${stopAfter / 1000} seconds`);
-				movieClips.shortyTimer = setTimeout(mediaControls.eventHandlers.next, stopAfter);
+				movieClips.shortyTimer = eventBus.dispatchAfter(stopAfter, 'event:next', 'clip_timer');
 				movieClips.shortyTime.set = stopAfter;
 				movieClips.shortyTime.at = Date.now();
 			} else {
@@ -240,9 +242,6 @@ const MovieClips = {
 				case 109: // @key {m}
 					video.actions.toggleMute();
 					break;
-				case 110:
-					mediaControls.eventHandlers.next();
-					break;
 				case 115: // @key {s}
 					video.actions.decreaseSpeed();
 					break;
@@ -261,7 +260,7 @@ const MovieClips = {
 					movieClips.handlers.fullscreen();
 					break;
 				case 35: // @key {end}
-					mediaControls.eventHandlers.next();
+					eventBus.dispatch('event:next', 'key_end');
 					break;
 				case 36: // @key {home}
 					video.actions.moveTo(0);
@@ -289,11 +288,11 @@ const MovieClips = {
 		 */
 		play(_) {
 			const video = movieClips.elements.read('#main');
-			video.removeEventListener('ended', mediaControls.eventHandlers.next);
+			video.removeEventListener('ended', videoEndHandler);
 			if (movieClips.shorty) {
 				movieClips.util.videoStop();
 			} else {
-				video.addEventListener('ended', mediaControls.eventHandlers.next);
+				video.addEventListener('ended', videoEndHandler);
 			}
 		},
 		pause(_) {
@@ -327,7 +326,6 @@ const MovieClips = {
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
 			movieClips.util.setStatus('Loading video helpers');
-			videoNode.onerror = mediaControls.eventHandlers.next;
 
 			eventBus.dispatch('hook:initialize');
 

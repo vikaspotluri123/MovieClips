@@ -29,7 +29,7 @@ export const eventHandlers = {
 	/**
 	 * @description: Moves to the next video [when the current video is over or times out (shorty)]
 	 */
-	next(event?: Event | string) {
+	_next(event?: Event | string) {
 		if (typeof event === 'object') {
 			event.preventDefault();
 		}
@@ -63,7 +63,7 @@ export const eventHandlers = {
 	/**
 	 * @description: Moves to the previous video
 	 */
-	previous(event?: Event) {
+	_previous(event?: Event) {
 		// Make sure it's possible to go back
 		if (movieClips.index > 0) {
 			event?.preventDefault();
@@ -82,10 +82,15 @@ eventBus.once('hook:bind_events', () => {
 	backNode = movieClips.elements.take('#back');
 	nextNode = movieClips.elements.take('#next');
 
-	backNode.addEventListener('click', eventHandlers.previous);
-	nextNode.addEventListener('click', eventHandlers.next);
+	backNode.addEventListener('click', eventBus.createRedirect('event:previous', 'previous_button'));
+	nextNode.addEventListener('click', eventBus.createRedirect('event:next', 'next_button'));
 	shortyToggleNode.addEventListener('click', eventHandlers.playPause);
 });
 
+eventBus.subscribe('event:next', () => {
+	eventHandlers._next();
+});
 
-// videoNode.onerror = () => eventBus.dispatch('event:next', 'error');
+eventBus.subscribe('event:previous', () => {
+	eventHandlers._previous();
+});
