@@ -75,9 +75,17 @@ export const eventHandlers = {
 	},
 }
 
-eventBus.once('hook:initialize', () => {
+eventBus.once('hook:bind_events', () => {
 	movieClips = (window as unknown as {movieClips: MovieClips}).movieClips;
+
 	shortyToggleNode = movieClips.elements.take('#playPause');
 	backNode = movieClips.elements.take('#back');
 	nextNode = movieClips.elements.take('#next');
+
+	backNode.addEventListener('click', eventHandlers.previous);
+	nextNode.addEventListener('click', eventHandlers.next);
+	shortyToggleNode.addEventListener('click', eventHandlers.playPause);
 });
+
+
+// videoNode.onerror = () => eventBus.dispatch('event:next', 'error');

@@ -1,4 +1,5 @@
 export type EventMap = {
+	'hook:bind_events': void;
 	'hook:initialize': void;
 }
 

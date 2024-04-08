@@ -321,20 +321,12 @@ const MovieClips = {
 		// We have to wait for the list to update
 		movieClips.util.updateList().then(() => {
 			const videoNode = movieClips.elements.read('#main');
+			eventBus.dispatch('hook:bind_events');
 			movieClips.util.setStatus('Making buttons clickable');
-			movieClips.elements.read('#back').addEventListener('click', mediaControls.eventHandlers.previous);
-			movieClips.elements.read('#next').addEventListener('click', mediaControls.eventHandlers.next);
-			videoNode.addEventListener('click', video.actions.togglePlaying); // We'll add a handler for this if needed in the future
-			videoNode.addEventListener('dblclick', movieClips.handlers.fullscreen);
 			movieClips.util.setStatus('Adding keyboard shortcuts');
-			movieClips.elements.read('#playPause').addEventListener('click', mediaControls.eventHandlers.playPause);
 			document.addEventListener('keypress', movieClips.handlers.keypress);
 			document.addEventListener('keydown', movieClips.handlers.keydown);
 			movieClips.util.setStatus('Loading video helpers');
-			videoNode.addEventListener('ratechange', movieClips.handlers.ratechange);
-			videoNode.addEventListener('play', movieClips.handlers.play);
-			videoNode.addEventListener('pause', movieClips.handlers.pause);
-			videoNode.addEventListener('loadedmetadata', movieClips.handlers.metadata);
 			videoNode.onerror = mediaControls.eventHandlers.next;
 
 			eventBus.dispatch('hook:initialize');

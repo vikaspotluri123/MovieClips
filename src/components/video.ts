@@ -105,7 +105,14 @@ export const actions = {
 	}
 };
 
-eventBus.once('hook:initialize', () => {
+eventBus.once('hook:bind_events', () => {
 	movieClips = (window as unknown as {movieClips: MovieClips}).movieClips;
-	videoNode = movieClips.elements['#main'];
+	videoNode = movieClips.elements.take('#main');
+
+	videoNode.addEventListener('click', actions.togglePlaying); // We'll add a handler for this if needed in the future
+	videoNode.addEventListener('dblclick', movieClips.handlers.fullscreen);
+	videoNode.addEventListener('ratechange', movieClips.handlers.ratechange);
+	videoNode.addEventListener('play', movieClips.handlers.play);
+	videoNode.addEventListener('pause', movieClips.handlers.pause);
+	videoNode.addEventListener('loadedmetadata', movieClips.handlers.metadata);
 });
