@@ -107,7 +107,7 @@ export const actions = {
 
 eventBus.once('hook:bind_events', () => {
 	movieClips = (window as unknown as {movieClips: MovieClips}).movieClips;
-	videoNode = movieClips.elements.take('#main');
+	videoNode = movieClips.elements.read('#main'); // TODO: This should be a take
 
 	videoNode.addEventListener('click', actions.togglePlaying); // We'll add a handler for this if needed in the future
 	videoNode.addEventListener('dblclick', movieClips.handlers.fullscreen);
