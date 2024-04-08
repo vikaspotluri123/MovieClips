@@ -28,7 +28,6 @@ export interface MovieClips {
 	db: MovieDb;
 	vids: FileNode[];
 	elements: ElementRegistry<Elements>;
-	isLoading: boolean;
 	shorty: boolean;
 	index: number;
 	range: {

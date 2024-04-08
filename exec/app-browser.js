@@ -50,7 +50,6 @@ const MovieClips = {
 	 * @type {FileNode[]}
 	 */
 	vids: [], // The array of scanned videos
-	isLoading: false, // Loading screen is showing
 	shorty: true, // Stop after {range} seconds or play to end
 	index: 0, // Video index
 	range: { // Shorty - min & max length to play
@@ -64,17 +63,8 @@ const MovieClips = {
 		at: Date.now() // Current time
 	},
 	util: {
-		/**
-		 * @description: Sets the visibility of the loading screens
-		 * @param {boolean} to: Should the loading be enabled
-		 */
 		setLoading(to) {
-			movieClips.isLoading = Boolean(to);
-			if (to) {
-				movieClips.elements.read('body').classList.add('loading');
-			} else {
-				movieClips.elements.read('body').classList.remove('loading');
-			}
+			movieClips.elements.read('body').classList.toggle('loading', Boolean(to));
 		},
 		/**
 		 * @description: Sets the status text in the loading screen
