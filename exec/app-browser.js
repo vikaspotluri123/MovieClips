@@ -3,6 +3,7 @@ import {filterFlat, readDirectory} from '../src/browser-files.ts';
 import {MovieDb} from '../src/movie-db.ts';
 import {eventBus} from '../src/event-bus.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
+import * as mediaControls from '../src/components/media-controls.ts';
 import * as video from '../src/components/video.ts';
 import {keybindings} from '../src/keybindings.ts';
 
