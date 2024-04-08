@@ -246,39 +246,44 @@ const MovieClips = {
 			movieClips.elements.read('#rate').textContent = this.playbackRate.toFixed(2);
 		}
 	},
-	initialize() {
+	crash(error) {
+		if (error instanceof NoDirectoriesError) {
+			movieClips.util.setLoading(false);
+			movieClips.elements.read('#selector').removeAttribute('hidden');
+			movieClips.elements.read('#player').setAttribute('hidden', 'true');
+		} else {
+			console.error(error);
+			movieClips.util.setStatus(`Something went wrong: ${error?.message ?? error}`, 'red');
+		}
+	},
+	async initialize(_force = false) {
 		movieClips.util.setLoading(true);
 		movieClips.elements.read('#selector').setAttribute('hidden', 'true');
 		movieClips.elements.read('#player').removeAttribute('hidden');
 		movieClips.elements.read('#directory-selector').addEventListener('click', movieClips.handlers.directory);
-		// We have to wait for the list to update
-		movieClips.util.updateList().then(() => {
-			movieClips.util.setStatus('Performing final preparations');
-			eventBus.dispatch('hook:bind_events');
-			keybindings.registerAll({
-				// @key {escape}
-				'27': movieClips.handlers.fullscreen,
-				// @key {end}
-				'35': () => eventBus.dispatch('event:next', 'key_end'),
-				// @key {f}
-				'102': movieClips.handlers.fullscreen,
-			});
-			keybindings.bind(document);
-			movieClips.util.setStatus('Starting Up');
-			if (movieClips.util.setMovie(0)) {
-				movieClips.util.setStatus('Done... Goodbye');
-				movieClips.util.setLoading(false);
-			}
-		}).catch(error => {
-			if (error instanceof NoDirectoriesError) {
-				movieClips.util.setLoading(false);
-				movieClips.elements.read('#selector').removeAttribute('hidden');
-				movieClips.elements.read('#player').setAttribute('hidden', 'true');
-			} else {
-				console.error(error);
-				movieClips.util.setStatus(`Something went wrong: ${error?.message ?? error}`, 'red');
-			}
+
+		try {
+			await movieClips.util.updateList();
+		} catch (error)  {
+			movieClips.crash(error);
+		}
+
+		movieClips.util.setStatus('Performing final preparations');
+		eventBus.dispatch('hook:bind_events');
+		keybindings.registerAll({
+			// @key {escape}
+			'27': movieClips.handlers.fullscreen,
+			// @key {end}
+			'35': () => eventBus.dispatch('event:next', 'key_end'),
+			// @key {f}
+			'102': movieClips.handlers.fullscreen,
 		});
+		keybindings.bind(document);
+		movieClips.util.setStatus('Starting Up');
+		if (movieClips.util.setMovie(0)) {
+			movieClips.util.setStatus('Done... Goodbye');
+			movieClips.util.setLoading(false);
+		}
 	}
 };
 

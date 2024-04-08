@@ -56,5 +56,6 @@ export interface MovieClips {
 		pause: (event?: any) => void;
 		ratechange: (event?: Event) => void;
 	};
+	crash: (error: Error) => void;
 	initialize: () => void;
 }
