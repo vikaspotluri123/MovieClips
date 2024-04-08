@@ -294,3 +294,8 @@ window.movieClips ??= MovieClips;
  */
 // @ts-expect-error
 const movieClips = window.movieClips;
+// @ts-expect-error
+if (!window.mcI) {
+	// @ts-expect-error
+	window.mcI = movieClips.initialize();
+}
