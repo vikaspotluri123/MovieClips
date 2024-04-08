@@ -20,12 +20,16 @@ export async function readDirectory(handle: FileSystemDirectoryHandle, parent: s
 	const tree: DirectoryNode = {};
 	const newParent = `${parent ?? '@'}/${handle.name}`;
 
-	for await (const node of handle.values()) {
-		if (node.kind === 'directory') {
-			promises.push(setProperty<Node>(tree, node.name, readDirectory(node, newParent)));
-		} else {
-			promises.push(setProperty<Node>(tree, node.name, getNodeFile(node, newParent)));
+	if (await handle.requestPermission({mode: 'read'}) === 'granted') {
+		for await (const node of handle.values()) {
+			if (node.kind === 'directory') {
+				promises.push(setProperty<Node>(tree, node.name, readDirectory(node, newParent)));
+			} else {
+				promises.push(setProperty<Node>(tree, node.name, getNodeFile(node, newParent)));
+			}
 		}
+	} else {
+		console.warn(`Access to ${handle.name} was denied`);
 	}
 
 	await Promise.all(promises);
