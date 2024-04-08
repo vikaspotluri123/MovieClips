@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Watch short clips of videos",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
     "hammerjs": "^2.0.8",
     "jquery": "^3.5.1",
