@@ -15,7 +15,7 @@ concurrency:
   group: 'pages'
   cancel-in-progress: true
 env:
-  BASE_URL: /movieclips/
+  BASE_URL: /MovieClips/
 jobs:
   deploy:
     environment:
