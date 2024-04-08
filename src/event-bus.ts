@@ -4,9 +4,14 @@ export type EventMap = {
 	'event:next': 'error' | 'key_end' | 'video_ended' | 'invalid_movie' | 'clip_timer' | 'next_button';
 }
 
+type TrackedKeyEvents = 'space' | 'k' | 'p' | 'd' | 'j' | 'l' |'m' |'s' | 'home' | 'left_arrow' | 'up_arrow' | 'right_arrow' | 'down_arrow';
+type KeyEvent = `key_${TrackedKeyEvents}`;
+
+export type SpiedEvent = keyof EventMap | KeyEvent | '__';
+
 interface EventSpy {
-	events: Array<{timestamp: number, event: keyof EventMap}>;
-	track(event: keyof EventMap | CustomEvent): void;
+	events: Array<{timestamp: number, event: keyof SpiedEvent}>;
+	track(event: SpiedEvent | CustomEvent): void;
 }
 
 let eventSpy: EventSpy | undefined;
@@ -109,7 +114,14 @@ class EventBus extends EventTarget {
 
 export const eventBus = new EventBus();
 
+export let trackedEvent: (eventName: SpiedEvent, callback: () => void) => (() => void) = (_, x) => x;
+
 if (true) {
+	trackedEvent = (eventName: SpiedEvent, callback: (...args: any[]) => void) => () => {
+		eventSpy.track(eventName);
+		callback(eventSpy!.events);
+	};
+
 	eventSpy = {
 		events: [],
 		track(event) {

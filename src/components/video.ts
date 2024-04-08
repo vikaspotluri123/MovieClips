@@ -1,4 +1,4 @@
-import {eventBus} from '../event-bus.ts';
+import {eventBus, trackedEvent} from '../event-bus.ts';
 import {Elements, MovieClips} from '../interfaces/movie-clips.ts';
 import {keybindings} from '../keybindings.ts';
 
@@ -119,31 +119,31 @@ eventBus.once('hook:bind_events', () => {
 
 	keybindings.registerAll({
 		// @key {space}
-		'32': actions.togglePlaying,
+		'32': trackedEvent('key_space', actions.togglePlaying),
 		// @key {k}
-		'107': actions.togglePlaying,
+		'107': trackedEvent('key_k', actions.togglePlaying),
 		// @key {p}
-		'112': actions.togglePlaying,
+		'112': trackedEvent('key_p', actions.togglePlaying),
 		// @key {d}
-		'100': actions.increaseSpeed,
+		'100': trackedEvent('key_d', actions.increaseSpeed),
 		// @key {j}
-		'106': () => actions.scrollBackward(10),
+		'106': trackedEvent('key_j', () => actions.scrollBackward(10)),
 		// @key {l}
-		'108': () => actions.scrollForward(10),
+		'108': trackedEvent('key_l', () => actions.scrollForward(10)),
 		// @key {m}
-		'109': actions.toggleMute,
+		'109': trackedEvent('key_m', actions.toggleMute),
 		// @key {s}
-		'115': actions.decreaseSpeed,
+		'115': trackedEvent('key_s', actions.decreaseSpeed),
 		// @key {home}
-		'36': () => actions.moveTo(0),
+		'36': trackedEvent('key_home', () => actions.moveTo(0)),
 		// @key {left-arrow}
-		'37': actions.scrollBackward,
+		'37': trackedEvent('key_left_arrow', actions.scrollBackward),
 		// @key {up-arrow}
-		'38': actions.increaseVolume,
+		'38': trackedEvent('key_up_arrow', actions.increaseVolume),
 		// @key {right-arrow}
-		'39': actions.scrollForward,
+		'39': trackedEvent('key_right_arrow', actions.scrollForward),
 		// @key {down-arrow}
-		'40': actions.decreaseVolume,
+		'40': trackedEvent('key_down_arrow', actions.decreaseVolume),
 	})
 });
 
