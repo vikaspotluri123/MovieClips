@@ -15,7 +15,7 @@ import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
 import * as video from '../src/components/video.ts';
 import * as directorySelector from '../src/components/directory-selector.ts';
-import * as player from '../src/components/directory-selector.ts';
+import * as player from '../src/components/player.ts';
 import {requestActivation} from '../src/components/activation.ts';
 import {keybindings} from '../src/keybindings.ts';
 import {NoDirectoriesError, ActivationRequiredError} from '../src/errors.ts';
