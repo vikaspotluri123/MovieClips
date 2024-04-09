@@ -117,9 +117,9 @@ export const eventBus = new EventBus();
 export let trackedEvent: (eventName: SpiedEvent, callback: () => void) => (() => void) = (_, x) => x;
 
 if (true) {
-	trackedEvent = (eventName: SpiedEvent, callback: (...args: any[]) => void) => () => {
+	trackedEvent = (eventName: SpiedEvent, callback: (...args: any[]) => void) => (...args) => {
 		eventSpy.track(eventName);
-		callback(eventSpy!.events);
+		callback(...args);
 	};
 
 	eventSpy = {
