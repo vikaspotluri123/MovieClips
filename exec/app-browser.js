@@ -46,9 +46,9 @@ function shuffle(array) {
 const unique = array => Array.from(new Set(array));
 
 /**
- * @satisfies {import('../src/interfaces/movie-clips.ts').MovieClips}
+ * @type {import('../src/interfaces/movie-clips.ts').MovieClips}
  */
-const MovieClips = {
+const movieClips = {
 	db: new MovieDb('movie-clips', 'file-handles'),
 	elements: new ElementRegistry([
 		'body', '#loading-wrapper', '#progress-name', '#status', '#selector', '#directory-selector', '#player', '#video-wrapper', '#meta', '#rate', '#title', '#animatedActions', '#action-play', '#action-pause', '#main', '#controls', '#back', '#playPause', '#next', '#activation-button',
@@ -289,14 +289,5 @@ const MovieClips = {
 };
 
 // @ts-expect-error
-window.movieClips ??= MovieClips;
-/**
- * @type {import('../src/interfaces/movie-clips.ts').MovieClips}
- */
-// @ts-expect-error
-const movieClips = window.movieClips;
-// @ts-expect-error
-if (!window.mcI) {
-	// @ts-expect-error
-	window.mcI = movieClips.initialize();
-}
+window.movieClips = movieClips;
+movieClips.initialize();
