@@ -1,3 +1,5 @@
+import {ActivationRequiredError} from './errors.ts';
+
 export type FileNode = File & {fullName: string;};
 export type Node = Directory | FileNode;
 export type DirectoryNode = Record<string, Node>;
@@ -19,24 +21,36 @@ export async function readDirectory(handle: FileSystemDirectoryHandle, parent: s
 	const promises: Promise<any>[] = [];
 	const tree: DirectoryNode = {};
 	const newParent = `${parent ?? '@'}/${handle.name}`;
-
-	if (await handle.requestPermission({mode: 'read'}) === 'granted') {
-		for await (const node of handle.values()) {
-			if (node.kind === 'directory') {
-				promises.push(setProperty<Node>(tree, node.name, readDirectory(node, newParent)));
-			} else {
-				promises.push(setProperty<Node>(tree, node.name, getNodeFile(node, newParent)));
-			}
-		}
-	} else {
-		console.warn(`Access to ${handle.name} was denied`);
-	}
-
-	await Promise.all(promises);
-	return {
+	const response = {
 		fullName: newParent,
 		tree,
 	};
+
+	const activation = await handle.queryPermission({mode:'read'})
+
+	if (activation === 'prompt') {
+		if (!navigator.userActivation.hasBeenActive) {
+			throw new ActivationRequiredError();
+		}
+
+		const activated = await handle.requestPermission({mode:'read'}) === 'granted';
+
+		if (!activated) {
+			console.warn(`Access to ${handle.name} was denied`);
+			return response;
+		}
+	}
+
+	for await (const node of handle.values()) {
+		if (node.kind === 'directory') {
+			promises.push(setProperty<Node>(tree, node.name, readDirectory(node, newParent)));
+		} else {
+			promises.push(setProperty<Node>(tree, node.name, getNodeFile(node, newParent)));
+		}
+	}
+
+	await Promise.all(promises);
+	return response;
 }
 
 export function filterFlat(directory: Directory, extensions: string[]) {

@@ -28,6 +28,10 @@
 
 /*End Icons*/
 
+[hidden] {
+	display: none;
+}
+
 .primary-dark
 {
 	background:#151B26 !important;

@@ -14,7 +14,9 @@ import {eventBus} from '../src/event-bus.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
 import * as video from '../src/components/video.ts';
+import {requestActivation} from '../src/components/activation.ts';
 import {keybindings} from '../src/keybindings.ts';
+import {NoDirectoriesError, ActivationRequiredError} from '../src/errors.ts';
 
 const videoEndHandler = eventBus.createRedirect('event:next', 'video_ended');
 
@@ -43,19 +45,13 @@ function shuffle(array) {
  */
 const unique = array => Array.from(new Set(array));
 
-class NoDirectoriesError extends Error {
-	constructor() {
-		super('No directories are available');
-	}
-}
-
 /**
  * @satisfies {import('../src/interfaces/movie-clips.ts').MovieClips}
  */
 const MovieClips = {
 	db: new MovieDb('movie-clips', 'file-handles'),
 	elements: new ElementRegistry([
-		'body', '#loading-wrapper', '#progress-name', '#status', '#selector', '#directory-selector', '#player', '#video-wrapper', '#meta', '#rate', '#title', '#animatedActions', '#action-play', '#action-pause', '#main', '#controls', '#back', '#playPause', '#next',
+		'body', '#loading-wrapper', '#progress-name', '#status', '#selector', '#directory-selector', '#player', '#video-wrapper', '#meta', '#rate', '#title', '#animatedActions', '#action-play', '#action-pause', '#main', '#controls', '#back', '#playPause', '#next', '#activation-button',
 	]),
 	/**
 	 * @type {FileNode[]}
@@ -257,6 +253,7 @@ const MovieClips = {
 		}
 	},
 	async initialize(_force = false) {
+		eventBus.dispatch('hook:bind_events');
 		movieClips.util.setLoading(true);
 		movieClips.elements.read('#selector').setAttribute('hidden', 'true');
 		movieClips.elements.read('#player').removeAttribute('hidden');
@@ -265,11 +262,15 @@ const MovieClips = {
 		try {
 			await movieClips.util.updateList();
 		} catch (error)  {
+			if (error instanceof ActivationRequiredError) {
+				requestActivation();
+				return;
+			}
+
 			movieClips.crash(error);
 		}
 
 		movieClips.util.setStatus('Performing final preparations');
-		eventBus.dispatch('hook:bind_events');
 		keybindings.registerAll({
 			// @key {escape}
 			'27': movieClips.handlers.fullscreen,

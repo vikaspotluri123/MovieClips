@@ -22,6 +22,7 @@ export type Elements = {
 	'#back': HTMLElement;
 	'#playPause': HTMLElement;
 	'#next': HTMLElement;
+	'#activation-button': HTMLButtonElement;
 }
 
 export interface MovieClips {

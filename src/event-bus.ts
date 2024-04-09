@@ -7,7 +7,7 @@ export type EventMap = {
 type TrackedKeyEvents = 'space' | 'k' | 'p' | 'd' | 'j' | 'l' |'m' |'s' | 'home' | 'left_arrow' | 'up_arrow' | 'right_arrow' | 'down_arrow';
 type KeyEvent = `key_${TrackedKeyEvents}`;
 
-export type SpiedEvent = keyof EventMap | KeyEvent | '__';
+export type SpiedEvent = keyof EventMap | KeyEvent | 'event:user_activated';
 
 interface EventSpy {
 	events: Array<{timestamp: number, event: keyof SpiedEvent}>;
