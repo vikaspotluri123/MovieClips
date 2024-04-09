@@ -17,8 +17,10 @@ import * as video from '../src/components/video.ts';
 import {requestActivation} from '../src/components/activation.ts';
 import {keybindings} from '../src/keybindings.ts';
 import {NoDirectoriesError, ActivationRequiredError} from '../src/errors.ts';
+import {runOnce} from '../src/run-once.ts';
 
 const videoEndHandler = eventBus.createRedirect('event:next', 'video_ended');
+const runBindEventsHook = runOnce(() => eventBus.dispatch('hook:bind_events'));
 
 /**
  * @typedef {import('../src/browser-files.js').FileNode} FileNode
@@ -253,7 +255,7 @@ const movieClips = {
 		}
 	},
 	async initialize(_force = false) {
-		eventBus.dispatch('hook:bind_events');
+		runBindEventsHook();
 		movieClips.util.setLoading(true);
 		movieClips.elements.read('#selector').setAttribute('hidden', 'true');
 		movieClips.elements.read('#player').removeAttribute('hidden');
