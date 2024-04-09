@@ -17,7 +17,7 @@ import * as video from '../src/components/video.ts';
 import {requestActivation} from '../src/components/activation.ts';
 import {keybindings} from '../src/keybindings.ts';
 import {NoDirectoriesError, ActivationRequiredError} from '../src/errors.ts';
-import {runOnce} from '../src/run-once.ts';
+import {shuffle, unique, runOnce} from '../src/util.ts';
 
 const videoEndHandler = eventBus.createRedirect('event:next', 'video_ended');
 const runBindEventsHook = runOnce(() => eventBus.dispatch('hook:bind_events'));
@@ -26,26 +26,6 @@ const runBindEventsHook = runOnce(() => eventBus.dispatch('hook:bind_events'));
  * @typedef {import('../src/browser-files.js').FileNode} FileNode
  */
 
-/**
- * @description perform an in-place Durstenfeld shuffle
- * @param {unknown[]} array
- */
-function shuffle(array) {
-	for (let i = array.length - 1; i > 0; --i) {
-		const swapIndex = Math.floor(Math.random() * (i + 1));
-		const swapData = array[i];
-		array[i] = array[swapIndex];
-		array[swapIndex] = swapData;
-	}
-}
-
-/**
- * @template T
- *
- * @param {T[]} array an array with duplicate items
- * @returns {T[]} a new array without duplicate items
- */
-const unique = array => Array.from(new Set(array));
 
 /**
  * @type {import('../src/interfaces/movie-clips.ts').MovieClips}
