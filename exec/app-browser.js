@@ -14,6 +14,7 @@ import {eventBus} from '../src/event-bus.ts';
 import {ElementRegistry} from '../src/element-registry.ts';
 import * as mediaControls from '../src/components/media-controls.ts';
 import * as video from '../src/components/video.ts';
+import * as directorySelector from '../src/components/directory-selector.ts';
 import {requestActivation} from '../src/components/activation.ts';
 import {keybindings} from '../src/keybindings.ts';
 import {NoDirectoriesError, ActivationRequiredError} from '../src/errors.ts';
@@ -227,7 +228,7 @@ const movieClips = {
 	crash(error) {
 		if (error instanceof NoDirectoriesError) {
 			movieClips.util.setLoading(false);
-			movieClips.elements.read('#selector').removeAttribute('hidden');
+			directorySelector.setVisibility(true)
 			movieClips.elements.read('#player').setAttribute('hidden', 'true');
 		} else {
 			console.error(error);
@@ -237,9 +238,8 @@ const movieClips = {
 	async initialize(_force = false) {
 		runBindEventsHook();
 		movieClips.util.setLoading(true);
-		movieClips.elements.read('#selector').setAttribute('hidden', 'true');
+		directorySelector.setVisibility(false);
 		movieClips.elements.read('#player').removeAttribute('hidden');
-		movieClips.elements.read('#directory-selector').addEventListener('click', movieClips.handlers.directory);
 
 		try {
 			await movieClips.util.updateList();
